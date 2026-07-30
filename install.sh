@@ -5,14 +5,19 @@ set -euo pipefail
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TARGET="${SKILLS_DIR:-$HOME/.claude/skills}"
-SKILLS=(design-pipeline design-probe design-implement design-implement-olares design-verify)
+SKILLS=(design-routing design-pipeline design-probe design-implement design-implement-olares design-verify ask-design)
+# 需要引用共享约束的 skill（ask-design 是纯地图，不需要）
+NEEDS_CONSTRAINTS=(design-routing design-pipeline design-probe design-implement design-implement-olares design-verify)
 
 mkdir -p "$TARGET"
 
-for s in "${SKILLS[@]}"; do
+for s in "${NEEDS_CONSTRAINTS[@]}"; do
   # 仓库内：references/constraints.md → shared/constraints.md（单一定义源）
+  mkdir -p "$REPO/$s/references"
   ln -sfn ../../shared/constraints.md "$REPO/$s/references/constraints.md"
+done
 
+for s in "${SKILLS[@]}"; do
   dest="$TARGET/$s"
   # 已存在同名真实目录（非软链）时不覆盖，避免误删手写内容
   if [ -e "$dest" ] && [ ! -L "$dest" ]; then
@@ -26,7 +31,7 @@ done
 echo
 echo "自检：每个 skill 的 constraints.md 是否可达"
 fail=0
-for s in "${SKILLS[@]}"; do
+for s in "${NEEDS_CONSTRAINTS[@]}"; do
   if head -1 "$TARGET/$s/references/constraints.md" >/dev/null 2>&1; then
     echo "  ok   $s"
   else

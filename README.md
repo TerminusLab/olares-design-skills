@@ -10,15 +10,21 @@
 
 幂等，重复跑安全。脚本会建软链并自检 `references/constraints.md` 是否可达。
 
-## 五个 skill
+## 七个 skill
 
 | skill | 什么时候触发 |
 |---|---|
+| `design-routing` | **自动**。任何涉及 UI / 样式 / 组件 / 页面 / 设计的请求都先落到它，由它判档位、选路径、挂底线 |
 | `design-pipeline` | 从一句需求做一个新页面 / 功能，走全链路 |
 | `design-probe` | 摸清一个项目有哪些 token、组件、Figma 变量可用 |
 | `design-implement` | 已有 Figma 稿，要实现成代码 |
 | `design-implement-olares` | 同上，且项目是 Olares / Quasar 系——与上一个**叠加**使用 |
 | `design-verify` | 检查落地对不对：硬编码、实际渲染值与词汇表是否一致 |
+| `ask-design` | **手动**。想不起来全貌时问它要一张地图 |
+
+日常**不需要自己挑 skill**——`design-routing` 会分发。它存在的理由是：大改你会记得走流程，小修（改个间距、换个颜色）你不会，而小修恰恰最容易绕过 token 约束。
+
+它也给 `polish` / `colorize` / `typeset` 那批通用设计 skill 加护栏：用之前先把词汇表交给它们，用之后跑一次静态校验。
 
 ## 链路长什么样
 
