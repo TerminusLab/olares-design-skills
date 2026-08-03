@@ -125,3 +125,28 @@ PC / Mobile 拆成两个文件时，**只拆模板与样式**。所有业务逻�
 7. **建议写回 skill 的经验条目**——本次踩到的坑，注明建议写进哪个文件的哪一节。
 
 第 7 条只是建议。**不要自己去改 skill 文件**，采不采纳由人决定。
+
+## 十一、外部 skill 找不到时
+
+本链路刻意不重写 Figma API 细节与 Quasar 官方文档，改为**按名字委派**（见 `design-pipeline`「委派怎么写」）。代价是：被委派的 skill 可能没装。
+
+**委派失败**指——agent 的可用 skill 列表里没有该名字，glob 兜底也搜不到文件。这时**不要静默继续**，按依赖性质分两种处理：
+
+### 必需依赖：停下来说
+
+`figma-generate-design` / `figma-use` / `figma-design-to-code` 缺任意一个 → **停下**，告知缺哪个、装在哪、装完怎么继续。
+
+**绝不自己临时实现 Figma API 调用**。手写出来的调用没有官方 skill 的节点语义处理，读回来的图层数据会缺变量绑定和组件实例信息，落地必然对不上——而且表面上看不出异常。
+
+### 可选依赖：降级并记账
+
+`quasar-skilld`、以及 `polish` / `colorize` / `typeset` / `adapt` 那批通用设计 skill 缺失 → **降级继续**：
+
+- 缺 `quasar-skilld` → 改为直接读项目 `node_modules/quasar/dist/api/*.json` 与 `node_modules/quasar/src/css/`。这本来就是更准的源（`quasar-skilld` 镜像的是 2.19.3，可能比项目版本新）。
+- 缺通用设计 skill → 按 `design-implement` 的常规流程做，不追求额外的视觉打磨。
+
+两种情况都要把「因缺 X 而降级为 Y」写进收尾报告的降级项（第十节第 5 条）。
+
+### 为什么要区分
+
+不区分的话只有两种坏结局：全部当必需 → 缺个可选 skill 就卡住不干活；全部当可选 → 缺了 Figma skill 也硬着头皮编，产出一份看起来完整、实际全错的代码。

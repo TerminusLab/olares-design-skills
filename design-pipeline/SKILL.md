@@ -37,6 +37,8 @@ description: >-
 
 **绝不写死带 hash 的路径**（`.../figma/07316dd.../`）——那是插件的 commit SHA，一升级就全断，而且断了不报错。
 
+glob 也搜不到时，按 `references/constraints.md` **第十一节**处理：必需依赖（Figma 那三个）停下来说，可选依赖降级并记账。**不要自己临时实现 Figma API 调用。**
+
 ---
 
 ## 阶段 1 · 需求澄清

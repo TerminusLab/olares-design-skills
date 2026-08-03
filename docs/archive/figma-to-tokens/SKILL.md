@@ -1,13 +1,29 @@
 ---
-name: figma-to-tokens
+name: DEPRECATED-figma-to-tokens
 description: >-
-  按项目自有的 design-token 变量体系 + 组件库,把 Figma 设计忠实落地为代码(布局/间距/结构/颜色/图标/响应式)。
-  当用户说"implement this figma / restyle to match figma / 按 figma 改 UI / 应用变量清单 / apply the variable list",
-  或给出 figma.com/design 链接并要求还原/改样式时使用。核心是:所有视觉值强制映射到项目 token,
-  优先复用现成组件,只改 UI 不碰业务逻辑。
+  【已废弃，不要使用】拆分前的旧版单体 skill，仅作历史追溯保留。内容已失效且已拆分到
+  design-implement / design-implement-olares / shared/constraints.md / design-verify。
+  任何情况下都不要调用本 skill；需要 Figma 落地能力时用 design-implement。
 ---
 
-# figma-to-tokens
+# figma-to-tokens（已废弃）
+
+> ⚠️ **已废弃于 2026-07-30。不要按本文件执行。**
+>
+> 本文件是拆分前的单体版，其中多处说法已被现行版本推翻。现行位置：
+>
+> | 内容 | 现在在哪 |
+> |---|---|
+> | 通用落地流程 | `design-implement/SKILL.md` |
+> | Olares / Quasar 特有值与坑 | `design-implement-olares/SKILL.md` |
+> | 硬约束（卡点 / 记账 / 失控预算 / 收尾报告） | `shared/constraints.md` |
+> | 验收规则与判据 | `design-verify/SKILL.md` |
+> | 词汇表探测 | `design-probe/SKILL.md` |
+>
+> 保留理由：追溯拆分前的形态。**不在 `install.sh` 的安装列表里**，frontmatter 的 `name`
+> 已前置 `DEPRECATED-` 以防被误加载。在仓库里 grep 到本文件时，请改去读上表对应的现行文件。
+
+---
 
 把 Figma 设计**忠实落地成代码**,并强制对齐到**目标项目自己的 design-token 变量体系**与**组件库**。
 适用于任何用「分层 token(primitive → 语义 CSS 变量 → 工具类)+ 组件库」的前端项目(本仓库是 Quasar/Vue)。
