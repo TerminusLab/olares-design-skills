@@ -15,7 +15,14 @@ description: >-
 
 术语见 [references/glossary.md](references/glossary.md)。
 
-**目标项目是 Olares / Quasar 系时，同时加载 `design-implement-olares`**——那里有本套设计系统的实测取值、组件对照和翻车清单。
+**要不要叠加 `design-implement-olares`？看两个事实，不靠项目名猜：**
+
+1. 目标仓库 `package.json` 的 `dependencies` 里有 `quasar` → 这是 Quasar 项目，叠加后至少能拿到框架层知识（那个 skill 自带的 Quasar 速查参考）。
+2. 再看能不能找到 `theme.scss` 里成对定义的 `--q-ink-*` / `--q-background-*` 语义色，或仓库里有 `Bt*` / `Terminus*` 组件 → 这是 Olares 系，叠加后那些标「本仓库」的实测取值才成立。
+
+只满足 1 不满足 2（其他 Quasar 项目）：框架机制可以用，但**所有具体取值必须重新盘点**——`md=12`、`cssAddon` 未开、`primary` 被重定向都是 Olares 的事实，不是 Quasar 默认。照搬会错。
+
+两个都不满足：不要叠，本文件的通用流程自成闭环。
 
 ---
 
@@ -65,6 +72,22 @@ token 名本身带连字符（`ink-1`、`orange-default`）类名就带（`text-
 
 ⚠️ **品牌色 / `primary` 可能随构建被覆盖成不同值。** 同一套代码在不同入口下 `primary` 可能是完全不同的颜色。要和同页其他控件（如开关）保持一致时，**直接用同一个语义色名**，而不是裸 `primary`。用前先确认当前构建的实际取值。
 
+设计稿写着「body1 / ink-2 / 上边距 md」时，两种写法的区别：
+
+```css
+/* ❌ 硬编码：改不动、暗色不跟随、验收会卡 */
+.status { font-size: 16px; line-height: 24px; color: #6B7280; margin-top: 12px; }
+```
+
+```html
+<!-- ✅ 工具类：模板上能直接看出用了哪三个 token -->
+<div class="text-body1 text-ink-2 q-mt-md">Draft</div>
+```
+
+必须写在 `<style>` 里时，至少让值走变量：`color: $ink-2;`——字号仍然交给 `text-body1`，别在 CSS 里重写一遍。
+
+这两段渲染结果可能完全一致，差别在**下一次改 token 时上面那段不会跳**。
+
 ### 图标与资源（三档）
 
 1. 能对应图标字体名 → 直接用。**注意 set 的命名前缀**，以项目现有写法为准。
@@ -76,6 +99,10 @@ token 名本身带连字符（`ink-1`、`orange-default`）类名就带（`text-
 ### 响应式
 
 忠实还原给定视口，用项目断点做优雅降级。缺移动端稿就标注降级，**不臆造**（见 `references/constraints.md` 第七节）。
+
+两套设计**差异大**就分文件，**差异小**就单文件自适应。分文件时严守第六节：**UI 可以各写一份，逻辑必须抽共享 composable**，否则两边各修一次 bug 就开始分叉。
+
+判断用**设备**（`platform`）还是**视口**（`screen`）要看项目现有惯例，且两者的断点值在部分项目里并不一致——先查清再选，不要两种混用。
 
 ## 第 4 步：验收前先自查
 

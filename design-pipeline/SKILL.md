@@ -74,7 +74,7 @@ glob 也搜不到时，按 `references/constraints.md` **第十一节**处理：
 
 **文件与图层组织**——每个项目固定一个 Figma 文件，`fileKey` 记在盘点文档里；链路产物放专用 page；frame 命名 `<feature>/<viewport>`（如 `账单详情/pc`、`账单详情/mobile`）。散落成多个文件的话，续跑时找不回上次的节点。
 
-**两个视口都要**——PC 与移动各生成一套。只做一套等于把移动端留给"落地时随便适配一下"。
+**两个视口都要**——PC 与移动各生成一套。只做一套等于把移动端留给"落地时随便适配一下"。生成移动稿前先看 `references/constraints.md` **第七节**的必查项（热区 ≥ 44px、不依赖 hover、导航抽屉改 overlay、安全区……）——这些得在**画的时候**就算进去，等落地才发现热区不够就要重画。
 
 **状态也要画**——阶段 1 的状态清单里每一项都要有对应图层，至少 empty 和 error。
 
@@ -92,7 +92,7 @@ glob 也搜不到时，按 `references/constraints.md` **第十一节**处理：
 
 ## 阶段 5 · 落地
 
-委派 `design-implement`。目标项目是 Olares / Quasar 系时，**叠加** `design-implement-olares`。
+委派 `design-implement`。要不要**叠加** `design-implement-olares`，按它开头的两条判据实地确认（看 `package.json` 有无 `quasar`、看有无 `--q-ink-*` 语义色与 `Bt*` 组件），不靠仓库名猜。
 
 每落地一个页面就更新一次运行记录，别攒到最后——卡点可能隔几天才通过，中途丢了上下文就要重来。
 

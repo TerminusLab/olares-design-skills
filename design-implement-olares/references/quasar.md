@@ -1,8 +1,30 @@
-# Quasar 布局 / 样式 / 组件参考（figma-to-tokens 配套）
+# Quasar 布局 / 样式 / 组件参考
 
-面向「拿到 Figma 稿，要用 Quasar 把它画出来」的场景。**目的是让你知道"该找什么、去哪查、哪里会翻车"**，不是背清单。
+`design-implement-olares` 的参考文件。面向「拿到 Figma 稿，要用 Quasar 把它画出来」的场景。**目的是让你知道"该找什么、去哪查、哪里会翻车"**，不是背清单。
 
-事实来源：Quasar 官方文档（quasar.dev）+ 本地 `node_modules/quasar/src/css/**` 与 `node_modules/quasar/dist/api/*.json`（实测 terminus-cloud，装的是 **quasar 2.12.0**）。
+**按需查，不必通读。** 下面目录按「要解决什么」排序：
+
+| 节 | 内容 |
+|---|---|
+| §0 | 权威源：类名 / props 去哪查，与 `quasar-skilld` 的分工 |
+| §1 | QLayout 整页骨架、`view` 字符串、硬性约束 |
+| §2 | Flex Grid：方向声明、`col-*`、响应式栅格 |
+| §2.4 | 响应式 flex/spacing 类需 `cssAddon` → **死类清单与替代方案** |
+| §2.5 | `q-gutter-*` vs `q-col-gutter-*`，负 margin 陷阱 |
+| §3 / §4 | 间距 / 排版工具类的生成规律 |
+| §5.1 | 颜色工具类的两种来源（调色盘 vs 项目自定义）|
+| §5.2 | `primary` 陷阱：`--q-primary` 被构建重定向 |
+| §6 | 断点与可见性（§6.2 = **CSS 与 JS 两套断点**）|
+| §7 | 其他工具类（写 scoped CSS 前先扫）|
+| §8 | 暗色模式 |
+| §9 | QIcon：set、前缀、`extras` 引入 |
+| §10 | 组件速查：Figma 元素 → Quasar 组件 |
+| §11 | 插件与 `$q` 对象 |
+| §12 | **13 条翻车清单**（提交前逐条自查）|
+
+事实来源：Quasar 官方文档（quasar.dev）+ 本地 `node_modules/quasar/src/css/**` 与 `node_modules/quasar/dist/api/*.json`。
+
+⚠️ **本文件只写框架机制，不写任何项目的具体取值。** 凡是「这个项目的 `md` 是多少」「`cssAddon` 开了没」「`primary` 指向哪里」这类事实，一律**去项目自己的盘点文档（`docs/design-system-inventory.md`）或直接查源码**。本文件告诉你的是「该查什么、去哪查、查不对会怎么翻车」。这样它对**任何 Quasar 项目**都成立；Olares 系的实测取值在 `design-implement-olares/SKILL.md` 里。
 
 ---
 
@@ -28,13 +50,13 @@ python3 -c "import json;d=json.load(open('node_modules/quasar/dist/api/QBtn.json
 
 | | `quasar-skilld` | 本文件 |
 |---|---|---|
-| 内容 | 官方文档全量镜像、逐版本 API 变更、通用 best practice | Figma→代码落地视角、**本仓库实测覆盖值**、真实返工点 |
+| 内容 | 官方文档全量镜像、逐版本 API 变更、通用 best practice | Figma→代码落地视角、**哪些默认值常被项目改**、真实返工点 |
 | 适合回答 | "QTable 有哪些 props" "QLayout view 怎么写" "2.17 改了什么" | "这个 12px 该写成什么类" "为什么我的间距不生效" |
-| 项目差异 | **不知道**（它是通用文档） | 知道（断点被改、`$spaces` 扩到 9 档、`cssAddon` 没开、图标用 `sym_r_`、`--q-primary` 被重定向） |
+| 项目差异 | **不知道**（它是通用文档） | 也不直接给值，但告诉你**哪几处容易被项目覆盖、该去哪确认** |
 
-⚠️ **版本差**：`quasar-skilld` 基于 **2.19.3**，本仓库装的是 **2.12.0**。它标 "new in 2.17/2.18" 的 props（如 `QTable` 的 `table-row-class-fn`、`QMenu` 的 `no-esc-dismiss`、`QSelect` 的 `disable-tab-select`）**本仓库没有**。凡是"新增"字样的，落地前回 `dist/api/*.json` 核一遍。
+⚠️ **版本差**：`quasar-skilld` 镜像的是 **2.19.3**，而项目装的往往更旧（先 `cat node_modules/quasar/package.json | grep version` 确认）。它标 "new in 2.x" 的 props（如 `QTable` 的 `table-row-class-fn`、`QMenu` 的 `no-esc-dismiss`、`QSelect` 的 `disable-tab-select`）在旧版本里根本不存在。凡是"新增"字样的，落地前回 `dist/api/*.json` 核一遍——那份 JSON 与**当前安装版本**严格一致。
 
-> 优先级不变：**项目组件库（`Bt*` 等）> Quasar 组件（`q-*`）> 手写**；**项目语义工具类 > Quasar 工具类 > scoped CSS**。
+> 优先级不变：**项目组件库 > Quasar 组件（`q-*`）> 手写**；**项目语义工具类 > Quasar 工具类 > scoped CSS**。
 
 ---
 
@@ -63,7 +85,7 @@ python3 -c "import json;d=json.load(open('node_modules/quasar/dist/api/QBtn.json
 - **即使不用 footer / 右抽屉，9 个位置也必须写全。**
 - QDrawer 设成 `overlay` 时强制 fixed，无视 `l/L`。
 
-本仓库实测：`src/layouts/main/MainLayout.vue` 用 `view="lHh Lpr lFf"`。
+进项目先 `grep -rn 'view="' src/layouts/` 看现有页面用的是哪个 `view` 字符串，新页面跟着写，别自己发明。
 
 ### 1.2 硬性约束
 
@@ -123,11 +145,12 @@ python3 -c "import json;d=json.load(open('node_modules/quasar/dist/api/QBtn.json
 
 生成源：`core/flex.sass` 末尾 `@each $name,$size in $sizes` —— 所以**只有 `col-*` / `offset-*` 有响应式版本**。
 
-### 2.4 其余响应式 flex/spacing 类需要 `cssAddon: true`（本仓库**没开**）
+### 2.4 其余响应式 flex/spacing 类需要 `cssAddon: true`（默认关）
 
 `row-md`、`justify-md-center`、`items-lg-end`、`no-wrap-sm`、`q-gutter-md-sm`、`q-pa-sm-md`、`flex-md-block` 这一整类，只有 `quasar.config.js` → `framework: { cssAddon: true }` 时才由 `css/flex-addon.sass` 生成。
 
-> **本仓库未配置 → 上面这些全是死类，写了不报错但完全不生效。** 需要响应式时：用 `col-<bp>-*`、可见性类（§6）、或 `$q.screen` 条件渲染。换项目务必重新确认。
+> **未配置 → 上面这些全是死类，写了不报错但完全不生效。** 这是最隐蔽的一类坑。
+> **先确认**：`grep -n cssAddon quasar.config.js`（没写就是 `false`）。关着时需要响应式：用 `col-<bp>-*`、可见性类（§6）、或 `$q.screen` 条件渲染。
 
 ### 2.5 Gutter：`q-gutter-*` vs `q-col-gutter-*`（高频翻车点）
 
@@ -137,7 +160,7 @@ python3 -c "import json;d=json.load(open('node_modules/quasar/dist/api/QBtn.json
 | 实现 | 父负 margin + 子正 **margin** | 父负 margin + 子正 **padding** |
 | 子元素能否直接加 background/border | 能 | **不能**（padding 被占用，要再套一层） |
 
-方向变体 `-x-` / `-y-`；档位取项目 `$flex-gutter` 的 key（本仓库 `none xs sm md lg xl xxl xxxl xxxxl`）。
+方向变体 `-x-` / `-y-`；档位取项目 `$flex-gutter` 的 key（项目可以扩展，去 `quasar.variables.sass` 看实际 key）。
 
 **三个必须记住的副作用：**
 
@@ -158,12 +181,11 @@ python3 -c "import json;d=json.load(open('node_modules/quasar/dist/api/QBtn.json
 - `auto` 仅对 margin 的 `l` / `r` / `x` 有效（`q-mx-auto` 居中）
 - `none` 用来**复位浏览器默认 margin**（`h1..h6` / `p` 自带 margin，`q-ma-none` 干掉它）
 
-档位取项目 `$spaces` 的 key。**Quasar 默认只有 `none xs sm md lg xl`；本仓库扩到 9 档**（base 8px）：
+档位取项目 `$spaces` 的 key。**Quasar 默认只有 `none xs sm md lg xl`，项目经常扩展并且改掉每档的值**。
 
-`xs=4 · sm=8 · md=12 · lg=20 · xl=32 · xxl=44 · xxxl=56 · xxxxl=80`
-
-> `$spaces` 每档是 `(x: …, y: …)` 两个值，`q-pa-md` 展开成 `padding: <y> <x>`。本仓库 x=y，其他项目未必。
-> Figma 的 `space-md=12` 直接对应 `md`，不要硬编码 `12px`。
+> ⚠️ **别按 Quasar 默认值猜 `md` 是多少。** 项目覆盖后 `md` 完全可能不是官方那个数。先查项目 `quasar.variables.sass` 的 `$spaces`，或读盘点文档的间距表。
+> `$spaces` 每档是 `(x: …, y: …)` 两个值，`q-pa-md` 展开成 `padding: <y> <x>`——有些项目 x≠y，先确认。
+> 拿到对照后，Figma 的 `space-md` 直接对应类名 `md`，不要硬编码 px。
 
 ---
 
@@ -172,7 +194,7 @@ python3 -c "import json;d=json.load(open('node_modules/quasar/dist/api/QBtn.json
 **类名 = `text-` + `$headings` map 的 key 原样。** key 怎么写类名就怎么拼，不擅自加连字符。
 
 - Quasar 默认 key：`h1..h6 subtitle1 subtitle2 body1 body2 caption overline`
-- **本仓库扩展了 `subtitle3` / `body3`** → `text-subtitle3` / `text-body3` 可用（项目覆盖了 `$headings`；换项目先确认）
+- **项目常覆盖 `$headings` 加新 key**（如 `subtitle3` / `body3`）→ 加了就有 `text-subtitle3`，没加就是死类。先查项目 `$headings` 的完整 key 列表
 - 由此推出的坑：`text-body-1`（硬塞连字符）不在 key 里，Quasar 不会生成，是**死类**。
 
 其他排版工具类（`core/typography.sass`）：
@@ -192,7 +214,9 @@ python3 -c "import json;d=json.load(open('node_modules/quasar/dist/api/QBtn.json
 ### 5.1 两种来源，分清再用
 
 1. **Quasar 调色板 + 品牌色**（`core/colors.sass` 自动生成）：`text-<color>` / `bg-<color>`，`<color>` 是注册的品牌色（`primary secondary accent dark positive negative info warning`）和调色板色（`red-5`、`grey-8`…）。
-2. **项目自定义语义色**（Quasar 调色板里没有的名字，如 `ink-1` `background-hover` `separator` `orange-default`）：必须由项目**逐条手写声明**才存在。本仓库在 `src/packages/lib/styles/variables-bg.sass`（`.bg-<name>`）、`variables-text.sass`（`.text-<name>`）声明，取值在 `theme.scss` 的 `--q-<name>`（light/dark 成对）。
+2. **项目自定义语义色**（Quasar 调色板里没有的名字，如 `ink-1` `background-hover` `separator`）：**Quasar 不会自动生成这类工具类**，必须由项目逐条手写 `.text-<name>` / `.bg-<name>` 声明才存在。
+
+> 所以看到设计稿写了一个语义色名，**不能假定对应的 `text-*` 类一定可用**。先 grep 确认项目声明过；声明文件位置、语义色清单、对应的 `--q-*` 变量名都属于项目事实，查盘点文档。
 
 **通则：类名 = 前缀 + 源 token 名原样。** 排版 key 恰好不含连字符（`body1`），颜色名恰好含（`ink-1`），不是两条规则，是同一条。
 
@@ -202,15 +226,15 @@ python3 -c "import json;d=json.load(open('node_modules/quasar/dist/api/QBtn.json
 
 品牌色最终落在 CSS 变量 `--q-primary` 上，**项目可以在 CSS 层重新指向别的 token**：
 
-- 本仓库 Space 构建：`src/css/app.scss` → `--q-primary: var(--q-orange-default)`
-- 本仓库 AssistHub SPA 构建：`src/assisthub/css/app.scss` → `--q-primary: var(--q-blue-default)`
+- 项目 `app.scss` 里一行 `--q-primary: var(--q-某语义色)` 就能盖掉 sass 层的值
+- **多入口构建时每个入口一份 `app.scss`，同一套代码下 `primary` 可能是不同颜色**
 - 都没覆盖时才是 sass `$primary`（Quasar 默认 `#1976D2`）
 
-所以**别默认 `color="primary"` 就是设计稿那个蓝**。要和同页其它品牌色控件（如开关）一致，直接用同一个语义色名（`color="blue-default"`），而不是裸 `primary`。
+所以**别默认 `color="primary"` 就是设计稿那个颜色**。先 `grep -rn 'q-primary' src/` 看当前入口指向哪里；要和同页其它品牌色控件（如开关）一致，**直接用同一个语义色名**而不是裸 `primary`。
 
 ---
 
-## 6. 断点与可见性（**本仓库有严重不一致，务必读**）
+## 6. 断点与可见性（**项目改过断点时极易翻车，务必读**）
 
 ### 6.1 CSS 可见性类（`core/visibility.sass`）
 
@@ -226,11 +250,11 @@ python3 -c "import json;d=json.load(open('node_modules/quasar/dist/api/QBtn.json
 | | xs | sm | md | lg | xl |
 |---|---|---|---|---|---|
 | Quasar 默认 CSS（`$breakpoint-*`） | ≤599 | 600–1023 | 1024–1439 | 1440–1919 | ≥1920 |
-| **本仓库覆盖后的 CSS** | **≤799** | **800–1023** | **1024–1599** | **1600–1919** | ≥1920 |
 | JS `$q.screen`（`Screen.js` 默认） | <600 | 600–1023 | 1024–1439 | 1440–1919 | ≥1920 |
 
-> **陷阱：改 sass `$breakpoint-*` 不会改 JS `$q.screen` 阈值**（`Screen.setSizes()` 反过来也不改 CSS）。本仓库两者在 **600–799px** 和 **1440–1599px** 两个区间**互相矛盾**：CSS 认为是 `xs` / `md`，JS 认为是 `sm` / `lg`。
-> → 同一个响应式行为**别一半用 CSS 类一半用 `$q.screen`**，选一套贯穿；跨断点显隐要在这两个区间实测。
+> **陷阱：改 sass `$breakpoint-*` 不会改 JS `$q.screen` 阈值**（`Screen.setSizes()` 反过来也不改 CSS）。项目只改 sass 一侧时，两套阈值就在被改动的区间里**互相矛盾**——同一个宽度，CSS 认为是 `xs`、JS 认为是 `sm`。两边用的是同一套名字，光看代码发现不了。
+> **先查两侧实际值**：`grep -n 'breakpoint-' quasar.variables.sass` 与 `grep -rn 'setSizes' src/`，算出哪几个区间对不上，记进盘点文档。
+> → 同一个响应式行为**别一半用 CSS 类一半用 `$q.screen`**，选一套贯穿；跨断点显隐要在那几个矛盾区间里实测。
 
 ### 6.3 JS 侧
 
@@ -286,7 +310,9 @@ python3 -c "import json;d=json.load(open('node_modules/quasar/dist/api/QBtn.json
 | `img:<path>` | 直接渲染一张图片（可用于 `assets/*.svg`） |
 | `svguse:<file>#<id>` | 引用 SVG sprite 里的 symbol（可继承 `currentColor`） |
 
-对应图标集必须在 `quasar.config.js` → `extras` 引入才有字体。本仓库 `extras: ['roboto-font','material-icons','material-symbols-rounded']`，实际用法几乎全是 **`sym_r_*`**（如 `sym_r_check_circle`）——**写错前缀 = 图标不显示或显示错图**。落地前 `rg 'q-icon'` 看现存写法，别照 Figma 图层名直接抄。
+对应图标集必须在 `quasar.config.js` → `extras` 引入才有字体，**没引入的前缀写了也不显示**。而 Material Icons 与 Material Symbols 是两套不同字体，前缀混用会静默失败或显示错图。
+
+> **落地前两步**：`grep -n extras quasar.config.js` 看引入了哪几套；`grep -rn 'q-icon' src/ | head` 看现存写法用的是哪个前缀，跟着写。**别照 Figma 图层名直接抄**。
 
 Figma 图标落地三档：① 能对上图标集名 → 直接 `q-icon`；② 自定义单色 → 导 SVG，优先 `currentColor` 内联 / `svguse:`（自动跟随主题，免双份）；③ 多色插图 → 导资源，实在不能 currentColor 才做 `_dark` 变体。
 
@@ -294,18 +320,18 @@ Figma 图标落地三档：① 能对上图标集名 → 直接 `q-icon`；② �
 
 ## 10. 组件速查（Figma 元素 → Quasar 组件）
 
-**先搜项目组件库和姊妹仓库有没有封装（`BtButton` / `BtDialog` / `BtSwitch` / `BtMenu` / `BtScrollArea` / `TerminusAvatar`…），再用原生 `q-*`。** 别停在"`q-toggle` 看着够用"就动手——项目封装通常已经把视觉、主题色、宽度约定对好了，自己套样式 = 返工。
+**先搜项目自己的组件库有没有封装，再用原生 `q-*`。** 别停在"`q-toggle` 看着够用"就动手——项目封装通常已经把视觉、主题色、宽度约定对好了，自己套样式 = 返工。项目组件的命名前缀与存放位置属于项目事实，查盘点文档，或 `ls src/components src/packages/*/components`。
 
-下表 props 摘自本仓库 `dist/api/*.json`（2.12.0）；**完整 API 查 JSON，文档正文查 `quasar-skilld`**。
+下表列的是 Quasar 2.x 常用 props，够用来选型；**确认某个 props 在当前版本是否存在，查项目 `dist/api/*.json`；文档正文查 `quasar-skilld`**。
 
 | Figma 里画的 | 组件 | 高频 props | 坑 |
 |---|---|---|---|
 | 按钮 | `QBtn` | `flat outline unelevated rounded round dense square push` `label icon icon-right` `color text-color` `no-caps no-wrap` `padding size` `loading disable` `stretch stack align` | **默认 label 全大写**，原样显示必须 `no-caps`；`loading` 文案在窄按钮里容易换行溢出，配 `no-wrap` / 缩短文案 |
 | 输入框 | `QInput` | `outlined filled borderless standout` `dense` `label stack-label hint prefix suffix` `rules lazy-rules reactive-rules` `error error-message` `hide-bottom-space` `clearable autogrow maxlength debounce` `mask` | 不加 `hide-bottom-space` 时下方永远预留报错行高度，间距会和 Figma 对不上 |
 | 下拉选择 | `QSelect` | 同 QInput 一套 + `options option-value option-label` `emit-value map-options` `multiple use-chips use-input` `menu-anchor menu-self popup-content-class` | 想让 v-model 是原始值而非对象 → `emit-value` + `map-options` |
-| 开关 | `QToggle` | `label left-label` `color keep-color` `dense size` `checked-icon` `true-value false-value` | 项目多半有 `BtSwitch`，优先用 |
+| 开关 | `QToggle` | `label left-label` `color keep-color` `dense size` `checked-icon` `true-value false-value` | 项目多半已封装过开关组件，先搜再用 |
 | 复选 / 单选 | `QCheckbox` `QRadio` `QOptionGroup` | `color dense label val` | |
-| 弹窗 | `QDialog` | `persistent maximized full-width full-height` `position`('top'/'bottom'/…) `seamless` `no-backdrop-dismiss no-esc-dismiss` `transition-show/hide` | 项目多半有 `BtDialog`（宽度/视觉已对齐）；`position` 可直接做移动端底部 sheet；自定义弹窗组件用 `useDialogPluginComponent` |
+| 弹窗 | `QDialog` | `persistent maximized full-width full-height` `position`('top'/'bottom'/…) `seamless` `no-backdrop-dismiss no-esc-dismiss` `transition-show/hide` | 项目多半已封装过弹窗（宽度/视觉已对齐），先搜再用；`position` 可直接做移动端底部 sheet；自定义弹窗组件用 `useDialogPluginComponent` |
 | 下拉菜单 / 气泡 | `QMenu` | `anchor self offset` `fit cover` `auto-close persistent` `max-height max-width` `context-menu` | `anchor`/`self` 是 `"top left"` 两词格式；默认已带弹窗阴影 |
 | 提示 | `QTooltip` | `anchor self offset delay hide-delay max-width` | |
 | 卡片 | `QCard` + `QCardSection` + `QCardActions` | `flat bordered square` | Figma 卡片一般 = `flat bordered` 再自己给圆角/阴影 |
@@ -330,7 +356,7 @@ Figma 图标落地三档：① 能对上图标集名 → 直接 `q-icon`；② �
 
 ## 11. 插件与 `$q` 对象
 
-`quasar.config.js` → `framework.plugins` 注册后才可用（本仓库：`Notify` `Dialog` `Loading` `Cookies` `Meta`）。
+`quasar.config.js` → `framework.plugins` 注册后才可用——**没注册就调用会直接报错**。先 `grep -n -A5 plugins quasar.config.js` 看注册了哪些。
 
 ```js
 const $q = useQuasar()
@@ -353,11 +379,11 @@ $q.platform.is.mobile    // 设备
 3. **`row-md` / `q-pa-sm-md` / `justify-md-center` 是死类**（除非 `cssAddon: true`）；`col-md-*` 才默认可用。
 4. **`text-body-1` 这种硬塞连字符的类名不存在** → 类名 = `text-` + `$headings` key 原样。
 5. **`QBtn` / `QTab` 默认大写** → 忘了 `no-caps` 就和设计稿对不上。
-6. **CSS 断点 ≠ `$q.screen` 断点**（本仓库 600–799 / 1440–1599 两段互相矛盾）→ 一套贯穿，跨区间实测。
+6. **CSS 断点 ≠ `$q.screen` 断点**（项目改了 sass 一侧就会出现矛盾区间）→ 一套贯穿，跨区间实测。
 7. **QLayout 系列上写了 `margin`** → 布局错位，改 `padding`。
 8. **`QScrollArea` / containerized QLayout 没给高度** → 塌成 0。
-9. **`q-icon` 前缀写错**（本仓库该用 `sym_r_*`）→ 不显示或显示错图。
+9. **`q-icon` 前缀写错**或图标集没在 `extras` 引入 → 不显示或显示错图。
 10. **`color="primary"` 不等于设计稿的蓝**（`--q-primary` 被各构建重定向）→ 用同一个语义色名。
 11. **`QInput` 未加 `hide-bottom-space`** → 底部多出一行报错预留高度，间距对不上。
 12. **删了包裹层 `<div class="…">`** → 别处 `:deep(.wrapper .q-btn)` 的外部样式失效（先 `rg` 确认没人依赖再删）。
-13. **照抄 `quasar-skilld` 里标"new in 2.17/2.18"的 props** → 本仓库 2.12.0 没有，回 `dist/api/*.json` 核。
+13. **照抄 `quasar-skilld` 里标"new in 2.x"的 props** → 项目装的版本可能更旧、根本没这个 props，回 `dist/api/*.json` 核。

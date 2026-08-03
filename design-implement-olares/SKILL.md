@@ -15,21 +15,59 @@ description: >-
 
 **先读 [references/constraints.md](references/constraints.md)** 的**第四节**（复用优先级）、**第五节**（工具类优先与豁免格式）与**第六节**（UI 可以分文件，逻辑必须共用——本仓库响应式分文件时直接适用）。
 
-**动手前先读 [references/quasar.md](references/quasar.md)**——Figma 落地视角的 Quasar 速查：QLayout `view` 串、flex grid、gutter 负 margin、间距/排版/颜色工具类的生成规律、断点（**CSS 与 `$q.screen` 是两套、本仓库互相矛盾**）、QIcon 前缀、组件对照表、13 条实测翻车清单，以及本仓库对 Quasar 默认值的覆盖（`$spaces` 9 档、`$headings` 多了 `subtitle3`/`body3`、`cssAddon` 未开、`--q-primary` 被重定向）。
+**[references/quasar.md](references/quasar.md) 按需查，不必通读**（363 行）。下表是入口：
 
-**查"某组件完整 API / 官方怎么说"用 `quasar-skilld` skill**（463 篇官方文档镜像 + 逐版本 API 变更）。⚠️ 它基于 **2.19.3**，标 "new in 2.17/2.18" 的 props 在旧版本项目里不存在——以项目 `node_modules/quasar/dist/api/*.json` 为准。
+| 要解决什么 | 读哪节 |
+|---|---|
+| 页面骨架、QLayout `view` 串怎么拼 | §1 |
+| 行列布局、`col-*`、gutter 负 margin | §2（响应式死类看 §2.4，gutter 陷阱看 §2.5）|
+| 间距 / 排版工具类的类名怎么推 | §3、§4 |
+| 颜色工具类来自哪个文件、`--q-primary` 被指到哪 | §5.1、§5.2 |
+| 断点取值、`$q.screen` 与 CSS 为何不一致 | §6（矛盾区间看 §6.2）|
+| 图标 set 与前缀 | §7 |
+| 某个 `q-*` 组件常用 props | §8（完整 API 查 `dist/api/*.json`）|
+| 动手前想先看有哪些坑 | 末节 13 条翻车清单 |
+
+本文件后文引用它时都会给出精确节号，跟着跳即可。
+
+**查"某组件完整 API / 官方怎么说"用 `quasar-skilld` skill**（463 篇官方文档镜像 + 逐版本 API 变更）。⚠️ 它基于 **2.19.3**，而本仓库是 **2.12.0**——标 "new in 2.13" 及以上的 props 在这里**都不存在**，以 `node_modules/quasar/dist/api/*.json` 为准。
 
 分工：**本文件管"项目特有值与坑"，`references/quasar.md` 管"Quasar 落地速查"，`quasar-skilld` 管"官方文档原文"。**
 
 ---
 
-## 参考实现以 TermiPass dashboard 为准
+## 小修速查（只改一两个值时读这一节就够）
 
-`packages/app/src/apps/dashboard/**` 是这套约定用得最规范的样板。拿不准写法时读它。
+走 `design-routing` 最短路径时，**读到这里即可动手**，不必读 `references/quasar.md`。四条最常撞的：
 
-定义源：`css/ui/quasar.variables.sass`（primitive + `$space-*` + `$headings`）、`css/ui/theme.scss`（语义 `--q-*`，亮 / 暗两套）。
+| | 本仓库实测 |
+|---|---|
+| **间距** | `xs=4 sm=8 md=12 lg=20 xl=32 xxl=44 xxxl=56 xxxxl=80`（px，9 档，base 8px）。⚠️ `md` 是 **12 不是 16**，Quasar 默认那套在这里不成立 |
+| **排版类名** | `text-` + key 原样，**数字紧贴不带连字符**：`text-body1` / `text-subtitle3`。写成 `text-body-1` 是**死类**，不报错、不生效 |
+| **响应式工具类** | `row-md` / `justify-md-center` / `q-pa-sm-md` 这类**全部无效**（`cssAddon` 未开）。要断点行为只能用 `col-md-*`、可见性类或 `$q.screen` 条件渲染 |
+| **`primary`** | 不是设计稿那个蓝。`--q-primary` 随构建被改（AssistHub=`blue-default`，Space=`orange-default`）。要和同页品牌色控件一致就**直接写语义色名** |
 
-terminus-cloud 对应：`src/packages/lib/styles/theme.scss`、`variables-bg.sass` / `variables-text.sass`、`quasar.variables.sass`、`mobile-font-text.sass`；组件库入口 `src/packages/index.ts`。
+超出「改一两个值」范围（新增区块、动组件结构、改响应式行为）时，回到本文件从下一节读起。
+
+---
+
+## 先确认当前是哪个仓库
+
+这几个仓库共用同一套设计系统，但**文件路径、`primary` 取值、响应式做法都不同**。只看对应那一行，**别照搬隔壁仓库的路径**——拿错不报错，只是找不到文件或写出本仓库不存在的类名。
+
+| 仓库 | 定义源 | `--q-primary` | 响应式做法 |
+|---|---|---|---|
+| **TermiPass dashboard**（样板，拿不准写法就读它）| `css/ui/quasar.variables.sass`（primitive + `$space-*` + `$headings`）、`css/ui/theme.scss`（语义 `--q-*`，亮/暗成对）| 跟所在构建 | — |
+| **terminus-cloud** | `src/packages/lib/styles/theme.scss`、`variables-bg.sass` / `variables-text.sass`、`quasar.variables.sass`、`mobile-font-text.sass`；组件库入口 `src/packages/index.ts` | Space 构建 = `orange-default` | `AdaptiveLayout` + `MainPc`/`MainMobile` 分文件，按 `$q.platform.is.mobile`（**设备**）|
+| **AssistHub SPA** | 同 terminus-cloud，但主题入口是 `src/assisthub/css/app.scss` | `blue-default` | 单文件用 `$q.screen`（**视口**）自适应 |
+| **均未覆盖时** | — | Quasar 默认 `#1976D2` | — |
+
+样板代码在 `packages/app/src/apps/dashboard/**`。
+
+两个常用到的全局事实：
+
+- **已注册的 Quasar 插件**：`Notify` `Dialog` `Loading` `Cookies` `Meta`。没列在这里的（如 `BottomSheet`）**直接调用会报错**，需先改 `quasar.config.js`。
+- **`MainLayout.vue` 的 `view="lHh Lpr lFf"`**：头部不固定、侧边栏在 header 下方。动到页面框架前先确认这串，否则自己算的吸顶偏移会对不上。
 
 ---
 
@@ -57,7 +95,7 @@ key 是 `h1..h6 / subtitle1 subtitle2 subtitle3 / body1 body2 body3 / caption / 
 
 ### ⚠️ `primary` 陷阱
 
-**`--q-primary` 随 app 构建被覆盖成不同值**：AssistHub SPA = `blue-default`，Space 嵌入 = `orange-default`，都没覆盖时才是 Quasar 默认 `#1976D2`。
+**`--q-primary` 随 app 构建被覆盖成不同值**——取值见上面的仓库对照表。
 
 所以**别默认 `color="primary"` 就是设计稿那个蓝**。要和同页其他品牌色控件（如开关）一致时，**直接用同一个语义色名**（如 `color="blue-default"`），否则按钮和开关撞不上色。
 
@@ -104,7 +142,14 @@ Figma 的「下拉、弹窗投影」= `0 4px 10px rgba(0,0,0,0.2)`，Quasar `.q-
 
 判据：两套设计**差异大**就分文件，**差异小**就自适应。分文件时严守共享约束第六节（逻辑抽共享 composable）。
 
-⚠️ **`$q.screen` 的断点值与 CSS 断点在本仓库是两套且互相矛盾**，见 `references/quasar.md` §6.2。
+⚠️ **`$q.screen` 的断点值与 CSS 断点在本仓库是两套且互相矛盾**：
+
+| 区间 | CSS 类认为 | `$q.screen` 认为 |
+|---|---|---|
+| 600–799px | `xs` | `sm` |
+| 1440–1599px | `md` | `lg` |
+
+同一个响应式行为**别一半用 CSS 类一半用 `$q.screen`**，选一套贯穿；跨断点显隐必须在这两个区间实测。成因与查证方法见 `references/quasar.md` §6.2。
 
 移动端字号用 `mobile-font-text.sass` 的尺度，别套桌面号。
 
