@@ -13,15 +13,21 @@ description: >-
 
 肉眼对比只能发现明显的错，发现不了**静默硬编码**——写了一个 `#5C5C5C` 而不是 `$ink-2`，页面看起来一模一样，但主题一切换就崩。这类错误正是反复返工的根源，所以验收必须是机器判定。
 
-**先读 [references/constraints.md](references/constraints.md)**（尤其第九节失控预算）。术语见本仓库根 `CONTEXT.md`。
+**先读 [references/constraints.md](references/constraints.md)**（尤其第九节失控预算）。术语见 [references/glossary.md](references/glossary.md)。
 
 ---
 
 ## 前提：拿到值集合
 
-从目标仓库 `docs/design-system-inventory.md` 读出合法值集合——颜色、间距、排版、圆角那几张表里的所有取值和 token 名。
+从目标仓库 `docs/design-system-inventory.md` 读出合法值集合——颜色、间距、排版、圆角那几张表里的所有取值和 token 名，亮暗值都算。
 
-没有盘点或已过期，先跑 `design-probe`。**没有值集合就没有判据**，这时不要硬验，直接说明并停下。
+**表结构与字段含义见 [references/inventory-schema.md](references/inventory-schema.md)**（与 `design-probe` 共用同一份契约）。三种异常分开处理：
+
+- **没有盘点或元信息里的源文件已变** → 先跑 `design-probe`，不要拿过期集合硬验。
+- **表结构与契约不符**（缺列、表头改名）→ 不要猜列的含义，按卡点 2 说明格式不符。
+- **读出来是空集合** → 这是最危险的一种，因为空集合会让每一项看起来都“无可比对”而静默通过。**集合为空必须当作验收未能执行报告，不是通过。**
+
+**没有值集合就没有判据**——这种时候说明情况并停下，不要“看起来没问题就算通过”。
 
 ---
 

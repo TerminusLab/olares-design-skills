@@ -11,7 +11,9 @@ description: >-
 
 **建立词汇表。** 后面所有视觉值都要往这套词汇上映射，所以这一步必须早于读 Figma 稿。
 
-**先读 [references/constraints.md](references/constraints.md)**。术语见本仓库根 `CONTEXT.md`。
+**先读 [references/constraints.md](references/constraints.md)**。术语见 [references/glossary.md](references/glossary.md)。
+
+**写盘点文档前读 [references/inventory-schema.md](references/inventory-schema.md)**——元信息、各张表的表头与填写规则都在那里。`design-verify` 按那份契约读值集合，格式散了验收会**静默失效**。
 
 ---
 
@@ -106,56 +108,8 @@ description: >-
 
 写进**目标仓库**（不是 skill 仓库）。
 
-头部必须有元信息，否则无法判断新鲜度：
+**格式完全按 [references/inventory-schema.md](references/inventory-schema.md)**：头部元信息（生成时间 / 源文件清单 / fileKey）、颜色 / 间距 / 排版 / 圆角 / 组件库五张表的表头与填写规则、图标与断点的记录要点。
 
-```markdown
-<!-- 生成时间: 2026-07-30T16:00+08:00 -->
-<!-- 源文件:
-  src/styles/theme.scss
-  src/styles/variables.sass
-  src/packages/index.ts
-  quasar.config.js
--->
-<!-- Figma fileKey: ABC123 -->
-```
+**表头不要改名、不要减列**，没有的信息填 `—`。`design-verify` 按列取值，减了列它会读到空集合然后“全部通过”。
 
-正文用**结构化表格**——`design-verify` 会把 token 那几张表当作合法值集合直接读，格式散了它就用不了：
-
-```markdown
-## 颜色
-
-| token | 亮色值 | 暗色值 | 工具类 | 来源 |
-|---|---|---|---|---|
-| ink-1 | #1a1a1a | #ffffff | .text-ink-1 | src/styles/theme.scss |
-
-## 间距
-
-| token | 值 | 工具类 |
-|---|---|---|
-| md | 12px | q-pa-md / q-ma-md |
-
-## 排版
-
-| token | 字号/行高/字重 | 工具类 |
-|---|---|---|
-| body1 | 16/24/400 | .text-body1 |
-
-## 组件库
-
-| 组件 | 用途 | Code Connect |
-|---|---|---|
-| BtDialog | 弹窗 | ✅ src/components/BtDialog.figma.ts |
-| BtSwitch | 开关 | ❌ 缺映射 |
-
-## 图标
-
-set、命名前缀、SVG 资源目录、暗色变体约定
-
-## 断点与响应式惯例
-
-## Figma 侧
-
-库名与 libraryKey、变量命名规律、可用组件
-```
-
-最后附一段**推导规律**而不只是清单：工具类名怎么从 token 名推出来（前缀 + token 名原样？还是有别的规则），这样遇到表里没列的 token 也能推对。
+两个最容易漏的点：**源文件清单要列全**（漏一个就不会触发重扫）；**结尾的推导规律必须写**（工具类名怎么从 token 名推出来）——只有清单没有规律，表外的一切都要重新探测。

@@ -13,7 +13,7 @@ description: >-
 
 **先读 [references/constraints.md](references/constraints.md)**：三个卡点、不许丢的东西、复用优先级、工具类优先、UI 分文件逻辑共用、多视口、旧消费者回归、收尾报告。本文件只写**流程**，约束都在那里。
 
-术语见本仓库根 `CONTEXT.md`。
+术语见 [references/glossary.md](references/glossary.md)。
 
 **目标项目是 Olares / Quasar 系时，同时加载 `design-implement-olares`**——那里有本套设计系统的实测取值、组件对照和翻车清单。
 
@@ -67,12 +67,7 @@ token 名本身带连字符（`ink-1`、`orange-default`）类名就带（`text-
 2. 自定义**单色**图标 → 导出 SVG，**优先 `currentColor` 内联**，自动跟随主题与文字色，免维护两份。
 3. **多色**插图 / logo → 导出资源；实在无法用 `currentColor` 时才产出暗色变体。
 
-**整节点导出 SVG 有两个坑**（实测）：
-
-- **祖先画板的 chrome 会混进来**：导出的 SVG 常把父级画板背景一起画进去——整块底色矩形、巨型画布矩形（坐标像 `M-2148 -342…`）、带 `drop-shadow` 的白卡片。必须删掉，只留真正的插画层（通常是带 `clip-path` 的那个 `<g>`），让背景透明。删完本地栅格化肉眼核对一遍。
-- **别动结构性的 `fill="white"`**：`<mask>` 和 `<clipPath>` 里的 white 是**遮罩语义**（白 = 显示），不是可见颜色。做暗色重映射时把它们一起改黑，遮罩就失效、图形残缺。改色前先占位保护，改完还原。
-
-**暗色变体是有序颜色重映射，不是 invert**（纯 invert 会出死黑纸卡）：线稿描边提亮；纸卡 / 镜片的白改成深卡片色；柔光底块改成极暗低对比；中灰件略降；黑色低透明的阴影翻成白色低透明；高光的半透明白保留为浅色（**先于纸卡替换处理**，否则会被一起改黑）。切换用主题选择器切两张图的 `display`，纯 CSS，不用 JS。
+走到第 3 档（整节点导出 SVG / 做暗色变体）时，**读 [references/svg-export.md](references/svg-export.md)**——祖先画板 chrome 混入、结构性 `fill="white"` 不能动、暗色重映射的顺序，都在那里。能停在第 2 档就不用读。
 
 ### 响应式
 

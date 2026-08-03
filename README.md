@@ -8,9 +8,9 @@
 ./install.sh
 ```
 
-幂等，重复跑安全。脚本会建软链并自检 `references/constraints.md` 是否可达。
+幂等，重复跑安全。脚本会建软链，并做两层自检：共享文件是否可达，以及**内容是否一致**（frontmatter 名与目录名、引用列表完整性、阶段编号、引用路径写法、归档防误加载）。后者是因为软链可达不等于说法一致——文档与实际不符不会报错，只会在半年后让人踩坑。
 
-## 七个 skill
+## skill 清单
 
 | skill | 什么时候触发 |
 |---|---|
@@ -39,15 +39,21 @@
 ## 仓库结构
 
 ```
-CONTEXT.md                  链路自身的术语表（glossary）
-docs/adr/                   架构决策记录
-shared/constraints.md       共享硬约束，唯一定义源
-<skill>/SKILL.md            各 skill
-<skill>/references/         constraints.md 是指向 shared/ 的软链
+CONTEXT.md                    链路自身的术语表（各 skill 里叫 glossary.md）
+shared/constraints.md         卡点 / 记账 / 复用优先级 / 失控预算 / 收尾报告 / 依赖降级
+shared/inventory-schema.md    盘点文档的格式契约（probe 写、verify 读）
+shared/svg-export.md          SVG 导出与暗色变体（只在真要导出时读）
+docs/adr/                     架构决策记录
+docs/inbox.md                 经验回流暂存区
+docs/archive/                 拆分前的旧版，已废弃、不安装
+<skill>/SKILL.md              各 skill
+<skill>/references/           指向 shared/ 与 CONTEXT.md 的软链
 install.sh
 ```
 
-**要改约束，改 `shared/constraints.md`**，所有引用它的 skill 同时生效（除纯地图类的 `ask-design`）。不要在单个 skill 里另写一份。
+`shared/` 下的每一份都是**唯一定义源**，各 skill 通过 `references/` 下的软链引用。要改就改 `shared/` 里那一份，所有引用它的 skill 同时生效（纯地图类的 `ask-design` 除外，它直接讲 `shared/` 本身）。不要在单个 skill 里另写一份。
+
+**新增共享文件后要回 `install.sh` 里加软链**，否则它在安装后的环境里不存在。
 
 ## 与官方 Figma skill 的分工
 

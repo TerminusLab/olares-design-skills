@@ -13,7 +13,7 @@ description: >-
 
 **不重写** Figma API 细节——那些在官方 skill 里（`figma-generate-design` 478 行、`figma-use` 435 行），本 skill 只负责在正确的时机委派过去。
 
-**先读 [references/constraints.md](references/constraints.md)**（三个卡点、记账规则、不许丢的东西、复用优先级、失控预算、收尾报告格式）。术语见本仓库根 `CONTEXT.md`。
+**先读 [references/constraints.md](references/constraints.md)**（三个卡点、记账规则、不许丢的东西、复用优先级、失控预算、收尾报告格式）。术语见 [references/glossary.md](references/glossary.md)。
 
 ---
 

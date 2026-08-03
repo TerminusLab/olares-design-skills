@@ -44,13 +44,22 @@ disable-model-invocation: true
 
 - **`design-routing`** — 自动分发器，模型自己会调用。任何涉及视觉的请求都先落到它，由它判档位、选路径、挂底线。它存在的理由是：**大改你会记得走流程，小修你不会**。
 
-## 约束住在哪
+## 共享的东西住在哪
 
-**`shared/constraints.md`** 是唯一定义源，除 `ask-design` 之外的 skill 各用一条软链引用（`references/constraints.md`）。
+`shared/` 下四份文件都是**唯一定义源**，各 skill 用软链引用到自己的 `references/` 下：
 
-要改约束就改那一个文件，全部生效。**不要**在某个 skill 里另写一份——那正是半年后两个 skill 说法不一致的起点。
+| 文件 | 内容 | 谁引用 |
+|---|---|---|
+| `constraints.md` | 卡点 / 记账 / 复用优先级 / 失控预算 / 收尾报告 / 依赖降级 | 除 `ask-design` 外全部 |
+| `glossary.md` | 链路术语（软链指向仓库根的 CONTEXT） | 除 `ask-design` 外全部 |
+| `inventory-schema.md` | 盘点文档的格式契约 | `design-probe`（写）、`design-verify`（读） |
+| `svg-export.md` | SVG 导出与暗色变体（只在真要导出时读） | `design-implement` |
 
-术语（链路 / 词汇表 / 盘点 / 桥 / 卡点 / 记账 / 降级 / 档位）见仓库根 `CONTEXT.md`。
+要改就改 `shared/` 里那一份，所有引用它的 skill 同时生效。**不要**在某个 skill 里另写一份——那正是半年后两个 skill 说法不一致的起点。
+
+新增共享文件后要回 `install.sh` 里加软链，否则它在安装后的环境里不存在。
+
+术语（链路 / 词汇表 / 盘点 / 桥 / 卡点 / 记账 / 降级 / 档位）见 `shared/glossary.md`。
 
 ## 三个卡点
 
