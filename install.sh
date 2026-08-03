@@ -124,6 +124,32 @@ for s in design-pipeline design-routing design-implement; do
   fi
 done
 
+# 2.4d 长页面阈值已从 5 降为 4，不得残留旧阈值
+#      阈值同时写在 constraints、pipeline、routing、implement、CONTEXT、ask-design 六处，
+#      改一处必漏其他，而且两个阈值共存时不会报错，只会让判据自相矛盾。
+if grep -rn "section \*\*≥ 5\|section ≥ 5\|够不够 5 个 section" --include=*.md "$REPO" 2>/dev/null | grep -v docs/archive; then
+  echo "  FAIL 残留长页面旧阈值‘section ≥ 5’，现行是 ≥ 4" >&2
+  fail=1
+fi
+
+# 2.4e 阶段 3.5 必须包含物料就绪度自检与三路分流
+#      清盘若只拆模块而不查缺件，缺文案 / 缺导出图 / 缺移动稿会拖到 5b 才暴露，
+#      那时已经写了一半，补文案意味着重排布局。
+if ! grep -q "物料就绪度自检" "$REPO/design-pipeline/SKILL.md"; then
+  echo "  FAIL design-pipeline 阶段 3.5 缺少物料就绪度自检，清盘会退化成只拆模块" >&2
+  fail=1
+fi
+for kw in "自己解决" "物料清单" "带建议再问\|带上自己的建议"; do
+  if ! grep -q "$kw" "$REPO/design-pipeline/SKILL.md"; then
+    echo "  FAIL design-pipeline 阶段 3.5 分流三档不完整，缺“$kw”一类" >&2
+    fail=1
+  fi
+done
+if ! grep -q "物料就绪门槛" "$REPO/design-pipeline/SKILL.md"; then
+  echo "  FAIL design-pipeline 缺物料就绪门槛，5a 会拿占位数据定 props 接口" >&2
+  fail=1
+fi
+
 # 2.5 归档目录不得被当成可用 skill：name 必须带 DEPRECATED 前缀
 for f in "$REPO"/docs/archive/*/SKILL.md; do
   [ -e "$f" ] || continue
