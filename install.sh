@@ -117,12 +117,53 @@ for f in "$REPO"/docs/archive/*/SKILL.md; do
   fi
 done
 
-# 2.6 skill 正文引用共享文件时必须走 references/ 相对路径
-#     （写“仓库根 CONTEXT.md”在安装后的环境里指不到任何地方）
-if grep -rn "仓库根[[:space:]]*\`\?CONTEXT.md" --include=SKILL.md "$REPO" 2>/dev/null | grep -v docs/archive; then
-  echo "  FAIL SKILL.md 里出现“仓库根 CONTEXT.md”，应改为 references/glossary.md" >&2
-  fail=1
-fi
+# 2.6 正文里提到的 .md 路径必须真实存在
+#     上一版只匹配“仓库根 CONTEXT.md”这一种已知错误写法，换个说法就漏网。
+#     现在改成把引用抽出来逐个验证，不依赖预先知道错在哪。
+#     两类不算引用，要排除：
+#       a) 目标仓库（而非本仓库）里的产物；
+#       b) 共享文件的软链名：它们在各 skill 的 references/ 下才存在，
+#          而 ask-design（地图）与 shared/ 内部是在“谈论”它们，不建软链。
+SHARED_NAMES="constraints.md glossary.md inventory-schema.md svg-export.md"
+
+skip_ref() {
+  local r="$1" base
+  base="$(basename "$r")"
+  case "$r" in
+    docs/design-system-inventory.md|docs/inbox.md|*run-record*) return 0 ;;
+    *.sass|*.scss|*.json|*.js) return 0 ;;
+    */SKILL.md|SKILL.md) return 0 ;;
+  esac
+  # 共享文件名（含 references/ 前缀的写法）已由自检一验证可达，不重复检
+  for n in $SHARED_NAMES; do
+    [ "$base" = "$n" ] && return 0
+  done
+  return 1
+}
+
+bad_refs=""
+check_refs() {
+  local file="$1" label="$2" basedir="$3" refs ref
+  refs="$(grep -oE '\(([A-Za-z0-9_./-]+\.md)\)|`([A-Za-z0-9_./-]+\.md)`' "$file" 2>/dev/null | tr -d '()`' | sort -u || true)"
+  for ref in $refs; do
+    skip_ref "$ref" && continue
+    if [ ! -e "$basedir/$ref" ] && [ ! -e "$REPO/$ref" ]; then
+      echo "  FAIL $label 引用了不存在的 $ref" >&2
+      bad_refs="x$bad_refs"
+    fi
+  done
+}
+
+for s in "${SKILLS[@]}"; do
+  check_refs "$REPO/$s/SKILL.md" "$s/SKILL.md" "$REPO/$s"
+done
+
+# 2.7 共享文件之间的互引也要能解析
+for f in "$REPO"/shared/*.md; do
+  check_refs "$f" "shared/$(basename "$f")" "$REPO/shared"
+done
+
+[ -n "$bad_refs" ] && fail=1
 
 if [ "$fail" -eq 0 ]; then
   echo "  ok   全部一致"

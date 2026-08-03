@@ -11,7 +11,7 @@ description: >-
 
 **建立词汇表。** 后面所有视觉值都要往这套词汇上映射，所以这一步必须早于读 Figma 稿。
 
-**先读 [references/constraints.md](references/constraints.md)**。术语见 [references/glossary.md](references/glossary.md)。
+**先读 [references/constraints.md](references/constraints.md)** 的**卡点 2**（没有词汇体系时停下来）、**第四节**（复用优先级，决定要扫哪些源）与**第十一节**（外部 skill 缺失时怎么办）。术语见 [references/glossary.md](references/glossary.md)。
 
 **写盘点文档前读 [references/inventory-schema.md](references/inventory-schema.md)**——元信息、各张表的表头与填写规则都在那里。`design-verify` 按那份契约读值集合，格式散了验收会**静默失效**。
 
@@ -26,7 +26,38 @@ description: >-
 
 盘点是快照，不是真理。过期的盘点比没有盘点更危险——它看起来可信。
 
-## 两侧并行扫
+## 最小可用盘点（小修场景）
+
+改一个间距不必先把整个设计体系扫一遍。**本次只动某一类视觉值时，只扫那一类**：
+
+| 本次要改 | 只需扫 |
+|---|---|
+| 间距 / 内外边距 / gap | 间距尺度 + 对应工具类 |
+| 颜色 | 语义层变量（亮/暗成对）+ 颜色工具类 |
+| 字号 / 行高 / 字重 | 排版尺度 + 排版工具类 |
+| 圆角 / 描边 / 投影 | 对应那一张表 |
+| 图标 | 图标约定（set / 前缀）|
+
+这条路径**不需要 `fileKey`，不扫 Figma 侧，不扫 Code Connect**。小修通常没有设计稿，也用不到组件映射。
+
+写出的文档仍然放 `docs/design-system-inventory.md`，但头部元信息**必须标注覆盖范围**：
+
+```markdown
+<!-- 盘点范围: 部分（仅间距、颜色）-->
+<!-- 未扫: 排版、圆角、组件库、Figma 侧、Code Connect -->
+```
+
+字段名与取值形式以 `references/inventory-schema.md` 为准（它是读方的唯一依据）。
+
+**为什么这行不能省：** 部分盘点里缺席的表与完整盘点里真实为空的表在文件里长得一模一样。不标范围的话，`design-verify` 下次读到它会把"本次没扫排版"误读成"这个项目没有排版体系"，于是排版类的验收项全部静默通过；后续任务也会把它当完整盘点直接用，不再重扫。
+
+相应地，**读到标了部分范围的盘点时**：本次要用的类别已覆盖就直接用；不在覆盖范围内就把那一类补扫上去，并更新范围声明。
+
+升级成完整盘点的时机：要进 `design-pipeline` 全链路、要落地 Figma 稿、或本次改动跨了三类以上视觉值。
+
+---
+
+## 两侧并行扫（完整盘点）
 
 代码侧与 Figma 侧互不依赖，同时开始。
 

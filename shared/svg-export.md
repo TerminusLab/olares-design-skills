@@ -79,4 +79,11 @@ SVG 里有两处 white **不是可见颜色**，而是遮罩 / 裁剪语义（�
 
 用主题选择器（如 `body.body--dark`）切两张 `<img>` 的 `display`。**纯 CSS，不用 JS。**
 
-这也正是「三种豁免」里的第二种（主题相关的资源切换）——`design-verify` 静态层会扫到这里的自定义类，**记得加注释说明原因**，否则算失败。
+这也正是「三种豁免」里的第二种（主题相关的资源切换）。`design-verify` 静态层会扫到这里的自定义类，**必须按固定前缀声明豁免**（格式见 `constraints.md` 第五节）：
+
+```css
+/* design-exempt: 亮/暗两张插画靠主题选择器切 display，无对应工具类 */
+.illustration-light { display: block; }
+```
+
+没有 `design-exempt:` 前缀就算失败，写了其他说明文字也不算。

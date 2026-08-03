@@ -13,7 +13,7 @@ description: >-
 
 通用流程（先词汇表后 Figma、组件选择、图标导出、自查、收尾）在 `design-implement` 里，**不在这里重复**。本文件只写「在这套设计系统里，具体该写什么、哪里会翻车」。
 
-**先读 [references/constraints.md](references/constraints.md)**（共享硬约束）。
+**先读 [references/constraints.md](references/constraints.md)** 的**第四节**（复用优先级）、**第五节**（工具类优先与豁免格式）与**第六节**（UI 可以分文件，逻辑必须共用——本仓库响应式分文件时直接适用）。
 
 **动手前先读 [references/quasar.md](references/quasar.md)**——Figma 落地视角的 Quasar 速查：QLayout `view` 串、flex grid、gutter 负 margin、间距/排版/颜色工具类的生成规律、断点（**CSS 与 `$q.screen` 是两套、本仓库互相矛盾**）、QIcon 前缀、组件对照表、13 条实测翻车清单，以及本仓库对 Quasar 默认值的覆盖（`$spaces` 9 档、`$headings` 多了 `subtitle3`/`body3`、`cssAddon` 未开、`--q-primary` 被重定向）。
 
@@ -59,7 +59,9 @@ key 是 `h1..h6 / subtitle1 subtitle2 subtitle3 / body1 body2 body3 / caption / 
 
 **`--q-primary` 随 app 构建被覆盖成不同值**：AssistHub SPA = `blue-default`，Space 嵌入 = `orange-default`，都没覆盖时才是 Quasar 默认 `#1976D2`。
 
-所以**别默认 `color="primary"` 就是设计稿那个蓝**。要和同页其他品牌色控件（如开关）一致时，**直接用同一个语义色名**（如 `color="blue-default"`），否则按钮和开关撞不上色。落地前先查当前构建的主题入口看 `$primary` 被设成了什么。
+所以**别默认 `color="primary"` 就是设计稿那个蓝**。要和同页其他品牌色控件（如开关）一致时，**直接用同一个语义色名**（如 `color="blue-default"`），否则按钮和开关撞不上色。
+
+落地前先查当前构建的主题入口看 `--q-primary` 被指到了哪里（具体文件路径见 `references/quasar.md` §5.2）。
 
 ## C. 间距：Figma `space-*` → `$space-*` / `q-pa*`（1:1，base 8px）
 
@@ -77,20 +79,9 @@ Figma 的「下拉、弹窗投影」= `0 4px 10px rgba(0,0,0,0.2)`，Quasar `.q-
 
 ## 工具类的两个来源，分清再查
 
-同样是 `text-*` / `bg-*`，可能来自两处：
+同样是 `text-*` / `bg-*`，可能来自两处：**Quasar 调色板里没有的语义名（`background-hover`、`ink-*`、`separator`…）→ 查项目 `src/packages/lib/styles/`；通用排版 / 间距 / 定位显隐 → 查 `node_modules/quasar/src/css/core/*`。**
 
-1. **项目自定义**（`src/packages/lib/styles/`）——**逐条手写声明**，存在与否以文件为准：
-   - `variables-bg.sass` → `.bg-<name>`（`.bg-background-hover`、`.bg-separator`…，均 `!important`）
-   - `variables-text.sass` → `.text-<name>`
-   - `theme.scss` → 每个 `--q-<name>` 的亮 / 暗取值
-   - `quasar.variables.sass` → primitive 调色板 + `$space-*` + `$headings`
-2. **Quasar 自带**（`node_modules/quasar/src/css/`）：
-   - `core/typography.sass` → `text-h1..h6` / `text-subtitle1/2` / `text-body1/2` / `text-caption` / `text-overline` / `text-weight-*`
-   - `core/flex.sass` + `variables.sass` → `q-pa*` / `q-ma*` / `q-gutter-*` / `q-col-gutter-*`
-   - `core/colors.sass` → 仅 Quasar 注册的品牌色
-   - `core/positioning.sass` / `visibility.sass` / `size.sass`
-
-一句话：**Quasar 调色板里没有的语义名（`background-hover`、`ink-*`、`separator`…）→ 查项目 `styles/`；通用排版 / 间距 / 定位显隐 → 查 `quasar/src/css/core/*`。** 两处都可能被项目二次覆盖。
+项目自定义的那一类是**逐条手写声明**的，存在与否以文件为准，不能按命名规律推断；两处都可能被项目二次覆盖。具体到哪个文件声明了什么，见 `references/quasar.md` §5.1（颜色两种来源）与 §0（权威源）。
 
 **图标是另一回事**：`q-icon name="..."` 的取值来自图标字体集，装在 `@quasar/extras/<set>/`。查某个 name 是否存在看当前启用的 set（`quasar.config` 的 `extras` / `iconSet`），不是 `quasar/src/css`。**前缀以项目现有 `q-icon name=` 写法为准**（如 Material Symbols Rounded 用 `sym_r_<name>`），别照 Figma 图层名抄——写错前缀 = 图标不显示或显示错图。
 
@@ -113,7 +104,7 @@ Figma 的「下拉、弹窗投影」= `0 4px 10px rgba(0,0,0,0.2)`，Quasar `.q-
 
 判据：两套设计**差异大**就分文件，**差异小**就自适应。分文件时严守共享约束第六节（逻辑抽共享 composable）。
 
-⚠️ **`$q.screen` 的断点值与 CSS 断点在本仓库是两套且互相矛盾**，见 `references/quasar.md`。
+⚠️ **`$q.screen` 的断点值与 CSS 断点在本仓库是两套且互相矛盾**，见 `references/quasar.md` §6.2。
 
 移动端字号用 `mobile-font-text.sass` 的尺度，别套桌面号。
 
@@ -123,19 +114,19 @@ Figma 的「下拉、弹窗投影」= `0 4px 10px rgba(0,0,0,0.2)`，Quasar `.q-
 
 ### 1. `q-gutter-*` 会强制 `flex-wrap: wrap`
 
-它的实现是「容器加 `flex-wrap:wrap` + 子元素加负 margin」。在**定高 + 可滚动的纵向堆叠容器**（弹窗 / 抽屉 body）里用它做垂直间距，子项会被折到**第二列**，跟前面的元素并排重叠、看起来像"消失了"。
+在**定高 + 可滚动的纵向堆叠容器**（弹窗 / 抽屉 body）里用它做垂直间距，子项会被折到**第二列**、与前面的元素并排重叠，看起来像"消失了"。
 
-实测：定高滚动列里第三张卡片折进第二列，与第一张 `top` 相同并排，宽度 600 vs 294。
+**本仓库实测：** 定高滚动列里第三张卡片折进第二列，与第一张 `top` 相同并排，宽度 600 vs 294。
 
-纵向堆叠的间距用 `column` + **固定 `gap`**（scoped，值对齐 `$space`）+ `no-wrap`。改完用浏览器量一下相邻子项的 `top` / `left`，确认是真的上下堆叠。
+纵向堆叠的间距用 `column` + `no-wrap` + **固定 `gap`**（scoped，值对齐 `$space-*`）。改完用浏览器量一下相邻子项的 `top` / `left`，确认是真的上下堆叠。
 
-`q-gutter-*` 只适合"本来就允许换行的一排 chip / 按钮"。
+负 margin 对父元素背景 / 边框的连带影响、以及 `q-gutter-*` 与 `q-col-gutter-*` 的适用区别，见 `references/quasar.md` §2.5。
 
 ### 2. 响应式工具类要 `cssAddon` 才有
 
-`row-md` / `justify-md-center` / `q-pa-sm-md` 这类断点版本**只有开了 `framework.cssAddon` 才生成**，本仓库**没开**——写了不报错、完全不生效。
+`row-md` / `justify-md-center` / `q-pa-sm-md` 这类断点版本只有开了 `framework.cssAddon` 才生成，**本仓库没开**——写了不报错、完全不生效。而 `col-md-*` / `offset-md-*` 是默认就有的。
 
-而 `col-md-*` / `offset-md-*` 是默认就有的。动手前先看 `quasar.config.js`。
+动手前先看 `quasar.config.js`；完整的死类清单与替代方案见 `references/quasar.md` §2.4。
 
 ### 3. token 迁移先加后删
 

@@ -26,7 +26,7 @@ disable-model-invocation: true
 
 - **新建**（做一个不存在的页面）→ 全链路。
 - **改造**（既有页面重做视觉）→ 跳过需求澄清，从探测进。
-- **小修**（改间距、换图标）→ 只走 `design-implement` + `design-verify` 静态层，不进编排。
+- **小修**（改间距、换图标）→ `design-implement` 第 1 步（拿词汇表）+ 第 3 步（落地），再跑 `design-verify` 静态层，不进编排。**第 1 步不能省**——没词汇表就没映射依据，也没验收判据。
 
 ## 各个 skill 分别管什么
 
@@ -46,20 +46,20 @@ disable-model-invocation: true
 
 ## 共享的东西住在哪
 
-`shared/` 下四份文件都是**唯一定义源**，各 skill 用软链引用到自己的 `references/` 下：
+各 skill 的 `references/` 下都是**软链**，指向唯一定义源：
 
 | 文件 | 内容 | 谁引用 |
 |---|---|---|
 | `constraints.md` | 卡点 / 记账 / 复用优先级 / 失控预算 / 收尾报告 / 依赖降级 | 除 `ask-design` 外全部 |
-| `glossary.md` | 链路术语（软链指向仓库根的 CONTEXT） | 除 `ask-design` 外全部 |
+| `glossary.md`（软链，真身是仓库根 `CONTEXT.md`） | 链路术语 | 除 `ask-design` 外全部 |
 | `inventory-schema.md` | 盘点文档的格式契约 | `design-probe`（写）、`design-verify`（读） |
 | `svg-export.md` | SVG 导出与暗色变体（只在真要导出时读） | `design-implement` |
 
-要改就改 `shared/` 里那一份，所有引用它的 skill 同时生效。**不要**在某个 skill 里另写一份——那正是半年后两个 skill 说法不一致的起点。
+前三行的真身在 `shared/`，`glossary.md` 的真身是仓库根 `CONTEXT.md`。要改就改真身那一份，所有引用它的 skill 同时生效。**不要**在某个 skill 里另写一份——那正是半年后两个 skill 说法不一致的起点。
 
 新增共享文件后要回 `install.sh` 里加软链，否则它在安装后的环境里不存在。
 
-术语（链路 / 词汇表 / 盘点 / 桥 / 卡点 / 记账 / 降级 / 档位）见 `shared/glossary.md`。
+术语（链路 / 词汇表 / 盘点 / 桥 / 卡点 / 记账 / 降级 / 档位）见仓库根 `CONTEXT.md`，各 skill 里的 `references/glossary.md` 就是它。
 
 ## 三个卡点
 
@@ -85,6 +85,6 @@ disable-model-invocation: true
 
 ## 经验怎么回流
 
-收尾报告里会附「建议写回 skill 的条目」，注明该放哪个文件哪一节。
+收尾报告里会附「建议写回 skill 的条目」，落点是 `docs/inbox.md`（暂存区），**不是直接改 SKILL.md**。
 
-**agent 不会自己改 skill 文件**——它会把一次性的偶发问题写成永久约束，半年后没人读得完。采不采纳你说了算。
+**agent 不会自己改 skill 文件**——它会把一次性的偶发问题写成永久约束，半年后没人读得完。当场改正文的结果总是“在最相关那节末尾加一段”，十次之后文件肿成三百行。先攒着，回看时才能看出哪些是同一类问题。采不采纳你说了算。
