@@ -108,6 +108,22 @@ if grep -rn "阶段[[:space:]]*0" --include=*.md "$REPO" 2>/dev/null | grep -v d
   fail=1
 fi
 
+# 2.4b 卡点数量已从三改四（新增「模块清盘」），不该再有「三个卡点」残留
+#      这类数字散在多个 skill 的开头摘要里，改一处必漏其他处。
+if grep -rn "三个卡点" --include=*.md "$REPO" 2>/dev/null | grep -v docs/archive; then
+  echo "  FAIL 残留“三个卡点”，现行是四个（含模块清盘）" >&2
+  fail=1
+fi
+
+# 2.4c 长页面档的三个入口必须同时知道它存在
+#      只在 pipeline 里定义一个新档位而入口不转发，结果是这个档永远不会被走到。
+for s in design-pipeline design-routing design-implement; do
+  if ! grep -q "长页面" "$REPO/$s/SKILL.md"; then
+    echo "  FAIL $s/SKILL.md 没提长页面档，该档位的入口会断" >&2
+    fail=1
+  fi
+done
+
 # 2.5 归档目录不得被当成可用 skill：name 必须带 DEPRECATED 前缀
 for f in "$REPO"/docs/archive/*/SKILL.md; do
   [ -e "$f" ] || continue

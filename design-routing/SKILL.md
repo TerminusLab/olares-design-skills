@@ -21,7 +21,7 @@ description: >-
 
 ## 三条底线：无论走哪条路径都要挂上
 
-1. **读 [references/constraints.md](references/constraints.md)**——三个卡点、复用优先级、工具类优先、不许丢的东西。
+1. **读 [references/constraints.md](references/constraints.md)**——四个卡点、复用优先级、工具类优先、不许丢的东西。
 2. **所有视觉值必须落在词汇表内**。目标仓库的 `docs/design-system-inventory.md` 就是值集合；没有或已过期先跑 `design-probe`。找不到对应值走卡点 2，**不要静默硬编码**。
 3. **收尾跑一次静态校验**（`design-verify` 第一层），扫本次改动文件有没有词汇表之外的 hex / px。改一行也要扫，很快。
 
@@ -35,6 +35,7 @@ description: >-
 |---|---|---|
 | "做一个 XX 页面 / 功能"（还没有设计稿） | `design-pipeline` | 新建，全链路 |
 | 给了 figma 链接 + "实现 / 还原 / 按这个改" | `design-implement`（Olares/Quasar 项目叠加 `design-implement-olares`） | — |
+| "做个官网首页 / 落地页"、或给的 figma 是一整页十几个模块 | `design-pipeline`，走阶段 3.5 拆分流程 | **长页面** |
 | "这个页面重做一版视觉 / 按新设计改版" | `design-pipeline`，从阶段 2 进 | 改造 |
 | "改一下间距 / 换个颜色 / 调字号 / 换个图标 / 这个组件样式改改" | `design-implement` 第 1 步 + 第 3 步，再跑 `design-verify` 静态层 | **小修** |
 | "摸清这个项目有哪些 token / 组件能用" | `design-probe` | — |
@@ -43,6 +44,12 @@ description: >-
 | "太单调 / 加点颜色 / 排版难看 / 加点动效 / 太吵太花 / 太平淡" | 对应的通用设计 skill，**但按下一节加护栏** | 小修 |
 
 **判不准档位就问一句**"这次是新建、改造，还是小修？"——比走错档位浪费半小时便宜。
+
+### 拿到 figma 链接时多问自己一句：这是一个页面还是一整页？
+
+并列 section **≥ 5**（官网首页、产品落地页典型如此）时，**不要直接委派 `design-implement` 整页落地**，转 `design-pipeline` 走拆分流程。
+
+这是最容易路错的一步：给一整页链接和给一个模块链接，请求听起来完全一样（都是「按这个实现」），但一整页一次做完的结果是后半页静默降质，而且看不出异常。判据不看用户怎么说，只看**链接里有几个并列 section**。
 
 ---
 
