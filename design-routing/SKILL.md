@@ -67,4 +67,4 @@ description: >-
 
 ## 记不清全貌时
 
-`ask-design` 是这套 skill 的地图，讲清楚五个 skill 与链路的关系。它**只能手动调用**，需要时叫它。
+`ask-design` 是这套 skill 的地图，讲清楚各个 skill 与链路的关系。它**只能手动调用**，需要时叫它。

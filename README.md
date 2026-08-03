@@ -47,7 +47,7 @@ shared/constraints.md       共享硬约束，唯一定义源
 install.sh
 ```
 
-**要改约束，改 `shared/constraints.md`**，五个 skill 同时生效。不要在单个 skill 里另写一份。
+**要改约束，改 `shared/constraints.md`**，所有引用它的 skill 同时生效（除纯地图类的 `ask-design`）。不要在单个 skill 里另写一份。
 
 ## 与官方 Figma skill 的分工
 

@@ -1,8 +1,8 @@
 # 共享硬约束
 
-本文件是**唯一定义源**。`design-pipeline` / `design-probe` / `design-implement` / `design-implement-olares` / `design-verify` 都引用它（各自的 `references/constraints.md` 是指向本文件的软链）。
+本文件是**唯一定义源**。`design-routing` / `design-pipeline` / `design-probe` / `design-implement` / `design-implement-olares` / `design-verify` 都引用它（各自的 `references/constraints.md` 是指向本文件的软链）。
 
-要改约束，改这里，五个 skill 同时生效。**不要**在某个 skill 里另写一份。
+要改约束，改这里，所有引用它的 skill 同时生效。**不要**在某个 skill 里另写一份。
 
 术语（链路 / 词汇表 / 盘点 / 桥 / 卡点 / 记账 / 降级 / 档位…）见仓库根 `CONTEXT.md`。
 

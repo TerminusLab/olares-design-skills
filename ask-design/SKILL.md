@@ -28,7 +28,9 @@ disable-model-invocation: true
 - **改造**（既有页面重做视觉）→ 跳过需求澄清，从探测进。
 - **小修**（改间距、换图标）→ 只走 `design-implement` + `design-verify` 静态层，不进编排。
 
-## 五个执行 skill
+## 各个 skill 分别管什么
+
+- **`design-pipeline`** — 上面那条主干的**编排者**，本身不写 Figma API 细节，只在每个阶段委派出去。负责把三个卡点、记账与运行记录串起来，确保跟会话也不丢上下文。
 
 - **`design-probe`** — 建立**词汇表**。扫代码侧的 token / 组件库 / 图标约定，扫 Figma 侧的变量 / 组件 / 样式，扫 Code Connect 覆盖率。产出目标仓库的 `docs/design-system-inventory.md`。它是**快照不是真理**，源文件变了就过期。
 
@@ -44,7 +46,7 @@ disable-model-invocation: true
 
 ## 约束住在哪
 
-**`shared/constraints.md`** 是唯一定义源，五个 skill 各用一条软链引用（`references/constraints.md`）。
+**`shared/constraints.md`** 是唯一定义源，除 `ask-design` 之外的 skill 各用一条软链引用（`references/constraints.md`）。
 
 要改约束就改那一个文件，全部生效。**不要**在某个 skill 里另写一份——那正是半年后两个 skill 说法不一致的起点。
 
