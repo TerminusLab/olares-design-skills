@@ -21,9 +21,11 @@ description: >-
 
 ## 三条底线：无论走哪条路径都要挂上
 
-1. **读 [references/constraints.md](references/constraints.md)**——四个卡点、复用优先级、工具类优先、不许丢的东西。
-2. **所有视觉值必须落在词汇表内**。目标仓库的 `docs/design-system-inventory.md` 就是值集合；没有或已过期先跑 `design-probe`。找不到对应值走卡点 2，**不要静默硬编码**。
-3. **收尾跑一次静态校验**（`design-verify` 第一层），扫本次改动文件有没有词汇表之外的 hex / px。改一行也要扫，很快。
+1. **读 [references/constraints.md](references/constraints.md)**——卡点、复用、工具类优先（含「token 进 style ≠ 合规」）。
+2. **视觉值 ∈ 词汇表**。`docs/design-system-inventory.md`；没有或过期先 `design-probe`。匹配不到 → 卡点 2，禁止静默硬编码。
+3. **收尾 `design-verify` 静态层**——裸 hex/px、伪合规间距、可工具类化布局（无 `design-exempt` 均失败）。改一行也要扫。
+
+Olares / Quasar：**叠加**读 `design-implement-olares`「小修速查」+「像开发者一样查」——框架全集在 `node_modules/quasar` 与 `quasar-skilld`，不在 skill 举例里。
 
 这三条对**所有**路径生效，包括下面那些通用设计 skill。
 
@@ -75,23 +77,17 @@ description: >-
 
 ## 小修最短路径（直接在这里就能开工）
 
-判定为小修（改间距 / 换颜色 / 调字号 / 换图标 / 微调某个组件样式）且**没有设计稿**时，不必先把 `design-implement` 和共享约束通读一遍。四步就够：
+判定为小修（改间距 / 色 / 字号 / 图标 / 微调样式）且**没有设计稿**时，四步：
 
-1. **拿词汇表** —— 读目标仓库 `docs/design-system-inventory.md` 里本次要用的那一类（改间距就只看间距表）。没有盘点 → 跑 `design-probe` 的**最小可用盘点**，只扫这一类，不需要 Figma `fileKey`。
-2. **先找工具类，再写 CSS** —— 类名 = 前缀 + token 名原样，不自己加减连字符（`body1` → `text-body1`，不是 `text-body-1`，后者是不生效的死类）。颜色用语义层变量，不硬编码亮色值。
-   ⚠️ **Olares / Quasar 项目先读 `design-implement-olares` 的「小修速查」一节**（十几行）。那四条恰好都是改一个值就会撞上的：`md` 是 12 不是 16、响应式工具类全部无效、`primary` 不是设计稿那个蓝。不读这一节的短路径等于没挂护栏。
-3. **找不到对应值就停下来问**（卡点 2）—— 不要静默硬编码。确实必须保留自定义值时，紧邻上一行写 `/* design-exempt: <原因> */`。
-4. **改完扫一遍** —— `design-verify` 静态层，只扫本次改动的行。改一行也要扫，很快。
+1. **词汇表** —— `docs/design-system-inventory.md` 相关表；没有 → `design-probe` 最小盘点（可无 Figma `fileKey`）。
+2. **工具类落地** —— 模板挂 class（类名 = 前缀 + token key 原样，如 `text-body1` 不是 `text-body-1`）。布局/间距默认改 class，不进 style 写 `map-get($space-*)` / `display:flex`。
+   - **Olares / Quasar**：先读 `design-implement-olares` 小修坑表；选型超出坑表 → **同一文件「像开发者一样查」**（`core/*.sass`、`dist/api`、`quasar-skilld` 的 `style/`+`layout/`）。举例不是全集。
+3. **卡点 2** —— 无匹配就问人；必须自定义 → 紧邻上一行 `/* design-exempt: … */`。
+4. **`design-verify` 静态层** —— 只扫本次改动行。
 
-超出下面任一条时，**回到完整路径**读 `design-implement`（Olares / Quasar 项目再叠 `design-implement-olares`）：
+超出任一条 → 完整 `design-implement`（Olares 再叠 `design-implement-olares`）：有 Figma 要对、改结构、导 SVG/暗色、改复用组件、跨三类以上视觉值。
 
-- 有 Figma 设计稿要对；
-- 要新增或改动组件结构，不只是换值；
-- 要导出 SVG / 做暗色变体；
-- 改到了被多处复用的组件（要做旧消费者回归）；
-- 跨了三类以上视觉值。
-
-这一节存在的理由：改一个间距要先读上千行文档的话，实际结果是绕过整套体系直接改。**能拿到 80% 约束的短路径，比没人走的完整路径有用。**
+短路径存在的理由：改一个间距若先读上千行，结果往往是绕过体系。**80% 约束的短路径，比没人走的完整路径有用——但短路径不豁免「去框架源查全集」。**
 
 ---
 

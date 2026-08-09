@@ -1,10 +1,11 @@
 ---
 name: design-verify
 description: >-
-  验收「落地对不对」：静态扫本次改动的源文件有没有词汇表之外的硬编码 hex/px，再用浏览器 CDP 读本次改动元素子树的
-  computed style，抓「写的是 token 但实际渲染成别的值」。当用户说"检查一下和设计对不对""验收这次改动"
-  "有没有硬编码颜色""这个页面和 figma 差在哪"，或落地完成需要判定是否达标时使用。
-  判定的是对不对，不是像不像。
+  Use when checking whether UI work is correct (not merely similar): after landing
+  design changes, or when the user asks to verify against design / find hardcoded
+  colors / compare to Figma. Static scan covers hex/px, pseudo-compliant spacing
+  (map-get $space in style), and layout that should be utility classes; optional CDP
+  for computed styles.
 ---
 
 # design-verify
@@ -53,11 +54,18 @@ description: >-
 - 颜色：`#rgb` / `#rrggbb` / `#rrggbbaa` / `rgb(...)` / `rgba(...)` / `hsl(...)`
 - 尺寸：`font-size` / `line-height` / `padding` / `margin` / `gap` / `border-radius` / `width` / `height` 上的裸 `px` 值
 - 字重：`font-weight` 的裸数字
+- **伪合规间距（高频漏网）**：`<style>` / `.scss` 改动行里，`padding` / `margin` / `gap`（含 `padding-top` 等）右侧出现 `map-get($space` 或直接写入 `$space-*` 做间距
+- **布局可工具类化（举一反三）**：改动行出现下列声明，且无紧邻 `design-exempt:` → 按失败处理（提示挂对应工具类）：
+  - `display:\s*flex` / `flex-direction:` / `align-items:` / `justify-content:`（→ `row`/`column`/`items-*`/`justify-*`/`flex-center`）
+  - `width:\s*100%` / `height:\s*100%`（→ `full-width`/`full-height`/`fit`/`col-grow`；固定 px 尺寸除外并豁免）
+  - `text-align:`（→ `text-left|center|right|justify`）
 
 ### 怎么判
 
 值能在集合里找到对应 token → **通过但提示**："这里可以用 `$ink-2` 代替 `#5C5C5C`"。
 值不在集合里 → **失败**，走卡点 2。
+伪合规间距（`map-get($space…)` 写进 style）且紧邻上一行**没有** `design-exempt:` → **失败**，提示改为模板 `q-p*` / `flex-gap-*`；有豁免且原因属于「工具类表达不了的组合」→ 记为已声明豁免。
+布局可工具类化同上：无豁免 → **失败**；有豁免 → 记入报告。
 
 ### 三种豁免
 

@@ -74,3 +74,31 @@
 - Greenfield / 阶段 3 自检 / 演示边界 → `design-pipeline` + `CONTEXT.md`
 - 空画布路由 → `design-routing` + `ask-design`
 - 动效规格 → `shared/constraints.md` 第三节；verify 轻检 → `design-verify`
+
+### 2026-08-09 · `map-get($space-*)` 写进 style 被当成合规
+
+- **现象**：ReplyDialog footer 小修时 agent 反复在 `<style>` 里改 `padding: map-get($space-lg)` / `gap: map-get($space-md)`，用户指出应优先用 `q-pa-*` / 工具类。
+- **根因**：① `design-verify` 只扫裸 hex/px，token 版 map-get 静默通过；② skill 强调「用 token」多于「挂工具类」，`design-implement-olares` 甚至把「scoped 固定 gap 对齐 $space」写成避坑正解，强化了捷径；③ `ask-design` 是地图，小修路径没把「改 class 不改 style」写成硬步骤。
+- **正确做法**：间距默认模板 `q-p*` / `flex-gap-*`；仅 `max(token, safe-area)` 等组合进 style + `design-exempt`。
+- **该归到哪**：已沉淀进 `shared/constraints.md` §5、`design-implement-olares` 小修速查/§C/正反例、`design-routing` 小修步骤、`design-verify` 静态扫、`ask-design`「已知漏洞」——本条可归档。
+
+### 2026-08-09 · 举一反三：布局面不只间距，AI 要自主用整套 Quasar 工具类
+
+- **现象**：用户追问除 `q-pa-*` 外的 `q-my-*` 等，以及 flex/尺寸等布局类 AI 能否自主用。
+- **根因**：参考文档（`quasar.md`）其实已有 §2–§7，但小修路径只强化了间距，agent 不会主动「CSS→类」映射；验收原先也不拦 `display:flex`。
+- **正确做法**：小修路径挂「自主布局」对照表；verify 拦无豁免的 flex/100%宽高/text-align；gutter 正解改为 `flex-gap-*`。
+- **该归到哪**：已写入 `design-implement-olares`「自主布局」、`quasar.md` §2.5/§7、`design-verify`、`design-routing`、`constraints`、`ask-design`。
+
+### 2026-08-09 · Skill 举例 ≠ Quasar 全集；要像开发者一样查源
+
+- **现象**：用户要求 AI 灵活使用 Quasar 全部布局能力，不能只靠 skill 里举的几个 class。
+- **根因**：小修路径曾写「不必读 quasar.md」，对照表又被当成白名单；权威源（`core/*.sass`、`dist/api`、`quasar-skilld` 的 style/layout）写在 §0 但未绑进强制流程。
+- **正确做法**：明确「举例不是目录」；强制查证顺序 + rg/Read 命令；skilld `style/`+`layout/` 为概念全文，安装版 `core/*.sass` 为类名真源。
+- **该归到哪**：已改 `design-implement-olares`（重写查证节）、`quasar.md` §0、`design-routing`、`ask-design`、`constraints`。
+
+### 2026-08-09 · ask-design 族收敛：约束框架无关、地图索引化、查证进主干
+
+- **现象**：多轮补丁后 ask-design / constraints 堆了 Quasar 类名表与重复漏洞段，共享约束被某一框架绑死。
+- **根因**：举一反三时把框架细节写进 `shared/constraints`；ask-design 从地图变成第二份操作手册。
+- **正确做法**：constraints §5 只保留框架无关原则；Quasar 查证只在 `design-implement-olares`；ask-design 改回索引型地图；routing 底线指向 verify 新扫描项。
+- **该归到哪**：本次已改正文（ask-design / constraints / routing / verify·olares description / README）。

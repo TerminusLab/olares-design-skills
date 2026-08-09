@@ -1,10 +1,11 @@
 ---
 name: design-implement-olares
 description: >-
-  Olares / Quasar 系仓库（terminus-cloud、TermiPass、dashboard、AssistHub 等）落地 Figma 设计时的项目特有知识：
-  实测的 token 取值与推导规律、Bt*/Terminus* 组件对照、$q.screen 与 platform 的区别、cssAddon 未开的响应式陷阱、
-  q-gutter 强制换行、图标前缀、primary 被重定向、以及历次返工换来的翻车清单。与 design-implement **叠加使用**：
-  通用流程看那边，本文件只补这套设计系统的具体值和坑。
+  Use when implementing or tweaking UI in Olares / Quasar repos (terminus-cloud,
+  TermiPass, dashboard, AssistHub, etc.), stacked on design-implement. Covers
+  project token values, Bt* components, screen vs platform, cssAddon dead classes,
+  and how to look up the full Quasar layout/style surface in node_modules and
+  quasar-skilld instead of memorizing skill examples.
 ---
 
 # design-implement-olares
@@ -15,7 +16,7 @@ description: >-
 
 **先读 [references/constraints.md](references/constraints.md)** 的**第四节**（复用优先级）、**第五节**（工具类优先与豁免格式）与**第六节**（UI 可以分文件，逻辑必须共用——本仓库响应式分文件时直接适用）。
 
-**[references/quasar.md](references/quasar.md) 按需查，不必通读**（363 行）。下表是入口：
+**[references/quasar.md](references/quasar.md) 是落地索引与坑，不是 Quasar 全文。** 按需跳节；布局/样式**全集**在 `node_modules/quasar` + `quasar-skilld`（见「像开发者一样查」）。下表是入口：
 
 | 要解决什么 | 读哪节 |
 |---|---|
@@ -30,7 +31,7 @@ description: >-
 
 本文件后文引用它时都会给出精确节号，跟着跳即可。
 
-**查"某组件完整 API / 官方怎么说"用 `quasar-skilld` skill**（463 篇官方文档镜像 + 逐版本 API 变更）。⚠️ 它基于 **2.19.3**，而本仓库是 **2.12.0**——标 "new in 2.13" 及以上的 props 在这里**都不存在**，以 `node_modules/quasar/dist/api/*.json` 为准。
+**查"某组件完整 API / 官方怎么说"用 `quasar-skilld` skill**（463 篇官方文档镜像 + 逐版本 API 变更）。⚠️ skilld 镜像版本可能**新于**项目：先看 `node_modules/quasar/package.json`；标 "new in …" 的 props 必须以项目 `dist/api/*.json` 为准。
 
 分工：**本文件管"项目特有值与坑"，`references/quasar.md` 管"Quasar 落地速查"，`quasar-skilld` 管"官方文档原文"。**
 
@@ -38,16 +39,69 @@ description: >-
 
 ## 小修速查（只改一两个值时读这一节就够）
 
-走 `design-routing` 最短路径时，**读到这里即可动手**，不必读 `references/quasar.md`。四条最常撞的：
+走 `design-routing` 最短路径时，先看下面「本仓库坑」再动手。  
+⚠️ **这张坑表 ≠ Quasar 布局全集。** 改取值（lg→md）够用；**布局选型不确定、表里没写到的类/组件/模式 → 必须去权威源查**（见下一节「像开发者一样查」），禁止凭记忆只复用表里那几条例子，也禁止因此退回手写 CSS。
 
 | | 本仓库实测 |
 |---|---|
-| **间距** | `xs=4 sm=8 md=12 lg=20 xl=32 xxl=44 xxxl=56 xxxxl=80`（px，9 档，base 8px）。⚠️ `md` 是 **12 不是 16**，Quasar 默认那套在这里不成立 |
+| **间距取值** | `xs=4 sm=8 md=12 lg=20 xl=32 xxl=44 xxxl=56 xxxxl=80`（px，9 档，base 8px）。⚠️ `md` 是 **12 不是 16**，Quasar 默认那套在这里不成立 |
+| **间距怎么写** | 按 Quasar 语法整套选用：`q-[p\|m][a\|x\|y\|t\|r\|b\|l]-[档位]`（`q-pa-lg` / `q-py-md` / `q-my-lg` / `q-pt-xxl`…），**按布局选方向，别默认只会 `q-pa-*`**。flex 子项 → `flex-gap-*`。详表见 `references/quasar.md` §3。**禁止**为换档位去 `<style>` 写 `map-get($space-*)`；`max(..., safe-area)` 才进 style + `design-exempt`。`q-*-md` 的 `md`=间距档，不是断点 |
 | **排版类名** | `text-` + key 原样，**数字紧贴不带连字符**：`text-body1` / `text-subtitle3`。写成 `text-body-1` 是**死类**，不报错、不生效 |
 | **响应式工具类** | `row-md` / `justify-md-center` / `q-pa-sm-md` 这类**全部无效**（`cssAddon` 未开）。要断点行为只能用 `col-md-*`、可见性类或 `$q.screen` 条件渲染 |
 | **`primary`** | 不是设计稿那个蓝。`--q-primary` 随构建被改（AssistHub=`blue-default`，Space=`orange-default`）。要和同页品牌色控件一致就**直接写语义色名** |
 
 超出「改一两个值」范围（新增区块、动组件结构、改响应式行为）时，回到本文件从下一节读起。
+
+### 像开发者一样查 Quasar 布局（全集在源里，不在 skill 举例里）
+
+**Skill / 对照表永远不是目录。** Quasar 布局与样式面很大（Flex Grid、Spacing、Visibility、Positioning、Size、Typography、Elevation、QLayout/Drawer/Page…）。你要做的是**按场景去权威源检索并选用**，不是背 skill 里那十几行例子。
+
+#### 查哪里（按这个顺序）
+
+| 层级 | 路径 | 用来干什么 |
+|---|---|---|
+| 1. 项目取值 / 死类 | 本文件「小修速查」+ `references/quasar.md` §0 入口表 | `md`=几、`cssAddon` 开没开、本仓库翻车点 |
+| 2. **已安装版本的类名全集** | 项目 `node_modules/quasar/src/css/core/*.sass`：`flex` `helpers` `size` `positioning` `visibility` `typography` `elevation` `mouse`… | **类是否存在、怎么拼**——以这份为准 |
+| 3. 组件 props 全集 | `node_modules/quasar/dist/api/Q*.json` | QLayout / QPage / QSpace / QSeparator… 与**当前版本**一致 |
+| 4. 官方概念与模式 | **`quasar-skilld`**：`references/docs/style/`（spacing、typography…）、`references/docs/layout/`（flex grid、QLayout…）；先看 `references/docs/_INDEX.md` | 怎么组合、playground、best practice |
+| 5. 项目扩展类 | 如 `src/css/common.scss` 的 `flex-gap-*`、`border-radius-*` | Quasar 没有、项目补的 |
+
+#### 怎么查（动手命令，别凭印象）
+
+```bash
+# 类名是否存在 / 有哪些变体（在项目根）
+rg -n "\\.(row|column|flex-center|full-width|q-pa-|gt-sm)" node_modules/quasar/src/css/core/
+
+# 某组件 props
+python3 -c "import json;print(list(json.load(open('node_modules/quasar/dist/api/QLayout.json'))['props']))"
+
+# 官方文档索引（skilld）
+rg -n "Flex|Spacing|Layout" ~/.claude/skills/quasar-skilld/references/docs/_INDEX.md
+```
+
+不确定就 **Read / rg 上述文件**，读完再写模板 class。版本以 `node_modules/quasar/package.json` 为准；`quasar-skilld` 镜像可能更新，标 "new in …" 的 props 必须回 `dist/api` 核对。
+
+#### 选型流程（灵活，不是背表）
+
+1. 拆意图：方向？对齐？栅格？内外边距？显隐？整页骨架？滚动容器？
+2. 到对应权威源找**一整族**工具类/组件（例如要间距就读 `style/spacing` + `core` 里生成规则，不要只想起 `q-pa-lg`）。
+3. 对照项目坑：`cssAddon`、定高列禁用 `q-gutter`、`$spaces` 取值、项目 `flex-gap-*`。
+4. 同页已有写法优先对齐；仍无对应 → scoped + `design-exempt`。
+
+下面是**起步直觉**（帮助把 CSS 念头拐到检索词），**不是白名单、不是上限**：
+
+| 念头 | 去哪搜（关键词 / 文件） |
+|---|---|
+| flex 行列对齐 | `core/flex.sass`；skilld `layout/grid/*` |
+| padding/margin | `q-[p\|m]…`；skilld `style/spacing.md` |
+| 宽高占满 | `core/size.sass`：`full-width` `fit`… |
+| 定位贴边 | `core/positioning.sass` |
+| 断点显隐 | `core/visibility.sass`；**别用**未开 cssAddon 的 `row-md` |
+| 子项间距 | 项目 `flex-gap-*` 或 skilld `layout/grid/gutter.md`（知坑再用） |
+| 顶栏/侧栏/页面 | skilld `layout/*` + `dist/api/QLayout.json` 等 |
+| 字号颜色 | `text-*` + 项目语义色；skilld `style/typography` |
+
+**禁止合理化**：「skill 表里没有就手写 CSS」「先写 flex 以后再换类」「只复用会话里见过的那几个 class」。
 
 ---
 
@@ -101,13 +155,24 @@ key 是 `h1..h6 / subtitle1 subtitle2 subtitle3 / body1 body2 body3 / caption / 
 
 落地前先查当前构建的主题入口看 `--q-primary` 被指到了哪里（具体文件路径见 `references/quasar.md` §5.2）。
 
-## C. 间距：Figma `space-*` → `$space-*` / `q-pa*`（1:1，base 8px）
+## C. 间距：Figma `space-*` → `q-pa*` / `flex-gap-*`（1:1，base 8px）
 
 `xs=4 · sm=8 · md=12 · lg=20 · xl=32 · xxl=44 · xxxl=56 · xxxxl=80`（px）
 
-padding / margin 用 `q-pa-md`、`q-px-sm`、`q-mt-lg`；flex 间距用 `flex-gap-sm`、`flex-gap-x-md`。
+**默认落点是模板工具类**，不是 `$space-*` 变量。按布局从整套里挑，不要只会 `q-pa-*`：
 
-Figma 的 `space-md=12` 直接对应 `md`，**不要硬编码 `12px`**。
+| 场景 | 类 |
+|---|---|
+| 容器四边内边距 | `q-pa-lg` |
+| 只要上下 / 左右内边距 | `q-py-md` / `q-px-lg` |
+| 单边（顶栏下推、底栏上推） | `q-pt-xxl` / `q-pb-lg` |
+| 块与块外间距、标题复位 | `q-mt-lg` / `q-my-md` / `q-ma-none` |
+| 轴组合 | `q-px-lg q-py-md` |
+| flex 子项间距（且不要 wrap） | `flex-gap-sm`…`flex-gap-xl`（`src/css/common.scss`） |
+
+语法与选型细节：`references/quasar.md` §3。  
+Figma `space-md` → 类名档位 `md`（**不是断点**）。  
+`$space-*` / `map-get` **只留给**工具类表达不了的组合，并 `design-exempt`。
 
 ## D. 投影
 
@@ -163,7 +228,8 @@ Figma 的「下拉、弹窗投影」= `0 4px 10px rgba(0,0,0,0.2)`，Quasar `.q-
 
 **本仓库实测：** 定高滚动列里第三张卡片折进第二列，与第一张 `top` 相同并排，宽度 600 vs 294。
 
-纵向堆叠的间距用 `column` + `no-wrap` + **固定 `gap`**（scoped，值对齐 `$space-*`）。改完用浏览器量一下相邻子项的 `top` / `left`，确认是真的上下堆叠。
+纵向堆叠用 `column` + `no-wrap` + **`flex-gap-*`（优先挂模板）**。没有对应 `flex-gap` 档位时才 scoped `gap` + `design-exempt`。  
+不要用「避开会 wrap → 就写 `map-get($space-*)`」这条捷径替代已有工具类。
 
 负 margin 对父元素背景 / 边框的连带影响、以及 `q-gutter-*` 与 `q-col-gutter-*` 的适用区别，见 `references/quasar.md` §2.5。
 
@@ -217,8 +283,26 @@ Figma：`Draft` 选项 = `color: ink-2` + `Text/Body1`。
 <!-- ✅ 布局/间距/排版/颜色全走工具类 -->
 <div class="column flex-center text-center col-grow q-py-xl q-px-lg">
   <h3 class="text-subtitle1 text-ink-1 q-ma-none">{{ title }}</h3>
-  <div v-if="$slots.actions" class="row flex-center q-gutter-md q-mt-lg"><slot name="actions"/></div>
+  <div v-if="$slots.actions" class="row flex-center flex-gap-md q-mt-lg"><slot name="actions"/></div>
 </div>
 ```
 
-（注意 `q-ma-none` 用来复位 `h1..h6` / `p` 的浏览器默认 margin。）
+（注意 `q-ma-none` 用来复位 `h1..h6` / `p` 的浏览器默认 margin。横向按钮行也优先 `flex-gap-*`，避免习惯性写回 `q-gutter-*`。）
+
+**第三个翻车点：用 `map-get($space-*)` 改 footer 留白，以为「用了 token」就合规。**
+
+```vue
+<!-- ❌ 验收扫 px 会放过，但仍绕过工具类 -->
+<div class="ah-reply__footer row items-center">…</div>
+<style scoped>
+.ah-reply__footer {
+  padding: map-get($space-lg, y) map-get($space-lg, x);
+  gap: map-get($space-md, x);
+}
+</style>
+```
+
+```vue
+<!-- ✅ PC 公共档挂工具类；移动端分叉才进覆盖（或 :class 条件） -->
+<div class="ah-reply__footer row items-center justify-end no-wrap q-pa-lg flex-gap-md">…</div>
+```

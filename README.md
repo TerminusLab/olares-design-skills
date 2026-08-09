@@ -18,13 +18,15 @@
 | `design-pipeline` | 从一句需求做一个新页面 / 功能，走全链路 |
 | `design-probe` | 摸清一个项目有哪些 token、组件、Figma 变量可用 |
 | `design-implement` | 已有 Figma 稿，要实现成代码 |
-| `design-implement-olares` | 同上，且项目是 Olares / Quasar 系——与上一个**叠加**使用 |
-| `design-verify` | 检查落地对不对：硬编码、实际渲染值与词汇表是否一致 |
-| `ask-design` | **手动**。想不起来全貌时问它要一张地图 |
+| `design-implement-olares` | Olares / Quasar 叠加：项目坑 + **查框架全集的方法**（不是举例目录） |
+| `design-verify` | 对不对：hex/px、伪合规 style、可工具类化布局；可选 CDP |
+| `ask-design` | **手动**地图：谁干什么、哪条底线、去哪查 |
 
-日常**不需要自己挑 skill**——`design-routing` 会分发。它存在的理由是：大改你会记得走流程，小修（改个间距、换个颜色）你不会，而小修恰恰最容易绕过 token 约束。
+日常**不需要自己挑 skill**——`design-routing` 会分发。小修最容易绕过工具类约束，所以短路径仍强制：词汇表 → class → verify。
 
-它也给 `polish` / `colorize` / `typeset` 那批通用设计 skill 加护栏：用之前先把词汇表交给它们，用之后跑一次静态校验。
+Olares/Quasar：布局/样式**全集**在项目 `node_modules/quasar` 与 `quasar-skilld`（`style/` `layout/`），skill 只给坑与查证流程。
+
+`polish` / `colorize` / `typeset` 等通用设计 skill：先词汇表、后 verify。
 
 ## 链路长什么样
 

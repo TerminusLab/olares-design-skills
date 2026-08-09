@@ -30,20 +30,28 @@
 
 ## 0. 权威源：先查再写（比记忆可靠）
 
+**本文件 + SKILL 举例 ≠ Quasar 布局/样式全集。** 开发者做法：场景不清就去源码/文档检索，读到族再选用；不要只在会话记忆或 skill 举例里打转。
+
 写任何一个类名 / props 前，能查到就别猜：
 
 | 想确认什么 | 去哪查 |
 |---|---|
-| 某个工具类是否存在、生成规则 | `node_modules/quasar/src/css/core/*.sass`（flex / typography / visibility / positioning / size / colors / helpers） |
+| 某个工具类是否存在、生成规则、整族有哪些 | 项目 `node_modules/quasar/src/css/core/*.sass`：`flex` `helpers` `size` `positioning` `visibility` `typography` `elevation` `mouse` `orientation` `transitions`… |
 | 间距 / 排版 / 断点 / 调色板的**实际取值** | 项目自己的 `quasar.variables.sass`（覆盖 Quasar 默认），再看 `node_modules/quasar/src/css/variables.sass` |
 | 某组件完整 props / slots / events | `node_modules/quasar/dist/api/<QComponent>.json`（离线、与**当前安装版本**严格一致，比在线文档准） |
-| 官方文档正文 / 版本 API 变更 / 官方 best practice | **`quasar-skilld` skill**（`~/.claude/skills/quasar-skilld/`，463 篇官方文档镜像 + release/issue/discussion） |
-| 响应式 flex/spacing 类是否可用 | `quasar.config.js` → `framework.cssAddon`（默认 **false**，见 §3.4） |
-
-快速查 props：
+| 官方概念、Flex 模式、Spacing 全文、QLayout | **`quasar-skilld`**：`references/docs/_INDEX.md` → `style/*`、`layout/*`、`vue-components/*` |
+| 响应式 flex/spacing 类是否可用 | `quasar.config.js` → `framework.cssAddon`（默认 **false**，见 §2.4） |
+| 项目补丁工具类 | 如 `src/css/common.scss`（`flex-gap-*` 等） |
 
 ```bash
+# 工具类检索（项目根）
+rg -n "\\.(full-width|flex-center|q-my-|gt-sm)" node_modules/quasar/src/css/core/
+
+# 组件 props
 python3 -c "import json;d=json.load(open('node_modules/quasar/dist/api/QBtn.json'));print(list(d['props']))"
+
+# 官方文档索引
+rg -n "Flex|Spacing|Layout|Grid" ~/.claude/skills/quasar-skilld/references/docs/_INDEX.md
 ```
 
 ### 和 `quasar-skilld` 的分工（别重复劳动）
@@ -51,7 +59,7 @@ python3 -c "import json;d=json.load(open('node_modules/quasar/dist/api/QBtn.json
 | | `quasar-skilld` | 本文件 |
 |---|---|---|
 | 内容 | 官方文档全量镜像、逐版本 API 变更、通用 best practice | Figma→代码落地视角、**哪些默认值常被项目改**、真实返工点 |
-| 适合回答 | "QTable 有哪些 props" "QLayout view 怎么写" "2.17 改了什么" | "这个 12px 该写成什么类" "为什么我的间距不生效" |
+| 适合回答 | Flex/Spacing/Layout **全文与模式**、组件 API 说明、版本变更 | 项目覆盖后的取值、cssAddon 死类、本仓库翻车点；**不替代**去 `core/*.sass` / skilld 查全集 |
 | 项目差异 | **不知道**（它是通用文档） | 也不直接给值，但告诉你**哪几处容易被项目覆盖、该去哪确认** |
 
 ⚠️ **版本差**：`quasar-skilld` 镜像的是 **2.19.3**，而项目装的往往更旧（先 `cat node_modules/quasar/package.json | grep version` 确认）。它标 "new in 2.x" 的 props（如 `QTable` 的 `table-row-class-fn`、`QMenu` 的 `no-esc-dismiss`、`QSelect` 的 `disable-tab-select`）在旧版本里根本不存在。凡是"新增"字样的，落地前回 `dist/api/*.json` 核一遍——那份 JSON 与**当前安装版本**严格一致。
@@ -111,7 +119,8 @@ python3 -c "import json;d=json.load(open('node_modules/quasar/dist/api/QBtn.json
 
 ## 2. Flex Grid（`row` / `column` / `col-*`）
 
-布局主力，**优先用它，别手写 `display:flex`**。
+布局主力，**优先用它，别手写 `display:flex`**。  
+动手前对照 `design-implement-olares`「自主布局」表；本节是机制与坑，不是允许回退到 scoped flex。
 
 ### 2.1 父容器（必须先声明方向，子类才生效）
 
@@ -166,7 +175,7 @@ python3 -c "import json;d=json.load(open('node_modules/quasar/dist/api/QBtn.json
 
 1. **两者都给父元素加负 margin** → 父元素上**不要**再写 background / margin / border，会露馅。正确做法：外面再包一层容器，样式写容器上，容器加 `overflow-auto` 或 `row`。
 2. **`q-gutter-*` 语境下容器是 wrap 的**：在**定高 + 可滚动的纵向堆叠容器**（弹窗/抽屉 body）里用它做垂直间距，子项会被折到第二列、与前面的元素并排重叠、看起来像"消失了"。
-   → 纵向堆叠改用 `column` + `no-wrap` + 固定 `gap`（值对齐 `$space-*`）。
+   → 纵向堆叠改用 `column` + `no-wrap` + **`flex-gap-*`（模板）**；无对应档才 scoped `gap` + `design-exempt`。
    → 改完用浏览器/CDP 量相邻子项的 `top` / `left`，确认真的是上下堆叠。
 3. `q-gutter-*` 适合"本来就允许换行的一排 chip / 按钮"，不适合"必须单列的定高滚动区"。
 
@@ -182,6 +191,28 @@ python3 -c "import json;d=json.load(open('node_modules/quasar/dist/api/QBtn.json
 - `none` 用来**复位浏览器默认 margin**（`h1..h6` / `p` 自带 margin，`q-ma-none` 干掉它）
 
 档位取项目 `$spaces` 的 key。**Quasar 默认只有 `none xs sm md lg xl`，项目经常扩展并且改掉每档的值**。
+
+### 3.1 按布局选型（agent 必读）
+
+**整套都要会用**，不要只会写 `q-pa-*`：
+
+1. **padding vs margin**：盒子**内部**留白 → `q-p*`；与**兄弟/上下块**推开、或消掉标签默认 margin → `q-m*`（`q-mt-*` / `q-my-*` / `q-ma-none`）。
+2. **方向**：四边相等 → `a`；只要水平或垂直 → `x` / `y`；只要一边 → `t|r|b|l`。Figma 四边不同就拆开写，例如 `q-pt-xxl q-px-lg q-pb-lg`。
+3. **档位**：词汇表 key 原样（`md` / `lg` / `xxl`…）。
+4. **子项间距**：一排/一列 flex 孩子之间 → 优先项目 `flex-gap-*`；别用 `q-gutter-*` 硬撑定高滚动列（见 §2.5）。
+
+| 布局意图 | 类名 |
+|---|---|
+| 卡片/弹层四边内边距 | `q-pa-lg` |
+| 内容区左右 20、上下 12 | `q-px-lg q-py-md` |
+| 区块与上一块拉开 | `q-mt-lg` / `q-my-md` |
+| 页面顶留白、底留白不同 | `q-pt-xxl q-pb-lg` |
+| 标题去掉浏览器默认 margin | `q-ma-none` |
+
+⚠️ **命名别混淆：**
+
+- `q-pa-md` / `q-my-md` → 最后的 `md` 是 **间距档**（本仓库 = 12px）
+- `q-pa-sm-md` → 中间 `sm` 是档、末尾 `md` 是 **断点**（需 `cssAddon`，本仓库通常是**死类**）
 
 > ⚠️ **别按 Quasar 默认值猜 `md` 是多少。** 项目覆盖后 `md` 完全可能不是官方那个数。先查项目 `quasar.variables.sass` 的 `$spaces`，或读盘点文档的间距表。
 > `$spaces` 每档是 `(x: …, y: …)` 两个值，`q-pa-md` 展开成 `padding: <y> <x>`——有些项目 x≠y，先确认。
@@ -284,7 +315,8 @@ python3 -c "import json;d=json.load(open('node_modules/quasar/dist/api/QBtn.json
 | 变换 | `rotate-45/90/…/315` `flip-horizontal` `flip-vertical` |
 | 间隔 | `on-left`(margin-right:12px) `on-right`(margin-left:12px) |
 
-**自检**：每写一条 `<style>` 规则前问——这条 `display:flex` / `margin` / `gap` / `font-size` / `color`，上面有没有现成的？有就挂类。scoped 自定义类只保留三种情况：固定像素尺寸无对应工具类、主题相关的资源切换、项目 token 里确实没有的值（并注释原因）。
+**自检**：每写一条 `<style>` 规则前问——这条 `display:flex` / `flex-direction` / `align-items` / `justify-content` / `width:100%` / `margin` / `gap` / `font-size` / `color` / `overflow` / `position`，§2–§7 有没有现成的？有就挂类。  
+scoped 只保留共享约束第五节三种豁免，并写 `design-exempt`。`design-verify` 会把无豁免的「style 里手写 flex / 100% 宽高」与伪合规 `map-get($space)` 一并判失败。
 
 ---
 
@@ -374,7 +406,7 @@ $q.platform.is.mobile    // 设备
 
 ## 12. Quasar 特有的翻车清单（提交前逐条自查）
 
-1. **`q-gutter-*` 在定高滚动纵向列里会把子项折到第二列** → 改 `column` + `no-wrap` + 固定 gap；改完量 `top`/`left` 确认。
+1. **`q-gutter-*` 在定高滚动纵向列里会把子项折到第二列** → 改 `column` + `no-wrap` + `flex-gap-*`；改完量 `top`/`left` 确认。
 2. **gutter 父元素加了 background / border** → 负 margin 露馅，改为外包一层容器。
 3. **`row-md` / `q-pa-sm-md` / `justify-md-center` 是死类**（除非 `cssAddon: true`）；`col-md-*` 才默认可用。
 4. **`text-body-1` 这种硬塞连字符的类名不存在** → 类名 = `text-` + `$headings` key 原样。

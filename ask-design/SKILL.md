@@ -1,94 +1,76 @@
 ---
 name: ask-design
-description: 设计到开发这套 skill 的地图——有哪些、各管什么、怎么串起来。想不起来该用哪个时问它。
+description: >-
+  Use when you need a map of the design-to-code skills (which skill does what, how
+  they chain, which path for 新建/改造/小修), or suspect routing went to the wrong
+  skill. Manual only — day-to-day UI work is auto-routed by design-routing.
 disable-model-invocation: true
 ---
 
 # ask-design
 
-你不会记得每个 skill，所以问。
+设计到开发这套 skill 的**地图**。日常改 UI 走 `design-routing` 自动分发；只有想看全貌、或怀疑走错档位时才打开这里。
 
-日常**不需要**用到这份地图——`design-routing` 会自动分发。这里是给你想看全貌、或者怀疑路由走错了的时候用的。
-
-## 主干：需求 → 页面能跑
+## 主干
 
 ```
 需求 → 探测词汇表 → Figma 真图层 → 【卡点：定稿确认】→ 落地 → 验收 → 收尾报告
 ```
 
-由 **`design-pipeline`** 编排。它自己不写 Figma API 细节，在每个阶段委派出去。
+编排者：`design-pipeline`。终点是「能跑 + 验收通过 + 收尾报告」——**不 commit / 不开 PR**。
 
-**Figma 链接 ≠ 有稿。** 画布空、或诉求是「先设计再开发」时仍走 pipeline 生成图层，不要当成「有稿直接 implement」。
+**Figma 链接 ≠ 有稿。** 空画布或「先设计再开发」→ pipeline 生成图层，不要直接 `design-implement`。
 
-终点是「页面能跑 + 验收通过 + 收尾报告」，**不 commit、不开 PR**——那些交给 `code-review`、`split-to-prs`。
+## 谁干什么
 
-## 三档进入方式
+| skill | 职责 |
+|---|---|
+| `design-routing` | **自动分发**：判档位、挂底线、小修短路径 |
+| `design-pipeline` | 新建 / 改造 / 长页面编排与卡点 |
+| `design-probe` | 建词汇表 → `docs/design-system-inventory.md`（快照，会过期） |
+| `design-implement` | Figma → 代码（通用） |
+| `design-implement-olares` | 上者叠加：Olares/Quasar 坑 + **像开发者一样查**框架全集 |
+| `design-verify` | 对不对：静态层 + 可选 CDP；含伪合规 / 可工具类化布局 |
+| `quasar-skilld` | Quasar 官方文档镜像（`style/` `layout/`…）；类名真源仍是项目 `node_modules/quasar` |
 
-不是所有活儿都要走全链路：
+## 三档（+ 长页面叠层）
 
-- **新建**（做一个不存在的页面）→ 全链路。
-- **改造**（既有页面重做视觉）→ 跳过需求澄清，从探测进。
-- **小修**（改间距、换图标）→ `design-implement` 第 1 步（拿词汇表）+ 第 3 步（落地），再跑 `design-verify` 静态层，不进编排。**第 1 步不能省**——没词汇表就没映射依据，也没验收判据。
-- **长页面**（并列 section ≥ 4，或有结构重复的模块；不限官网首页，仪表盘 / 设置页 / 详情页 / 长表单同样算）→ 不是第四种并列档位，而是叠在新建/改造上的拆分流程：`design-pipeline` 阶段 3.5（模块清盘）→ 5a（骨架 + 公共组件）→ 5b（逐模块填充）。把整页链接一次丢给 `design-implement` 是返工最多的单一原因。
-
-## 各个 skill 分别管什么
-
-- **`design-pipeline`** — 上面那条主干的**编排者**，本身不写 Figma API 细节，只在每个阶段委派出去。负责把四个卡点、记账与运行记录串起来，确保跟会话也不丢上下文。
-
-- **`design-probe`** — 建立**词汇表**。扫代码侧的 token / 组件库 / 图标约定，扫 Figma 侧的变量 / 组件 / 样式，扫 Code Connect 覆盖率。产出目标仓库的 `docs/design-system-inventory.md`。它是**快照不是真理**，源文件变了就过期。
-
-  链路里所有"映射到 token"的动作都依赖它，所以它必须早于读 Figma 稿。**探测发现项目根本没有 token 体系、或 Figma 侧没有设计系统库，都会停下来问你**——链路不假装自己完整。
-
-- **`design-implement`** — 把 Figma 稿落地成代码，通用手册。核心是三件事：复用优先于新写、所有值映射到词汇表、只改 UI 不碰业务逻辑。
-
-- **`design-implement-olares`** — 上一个的**叠加层**，不是替代。Olares / Quasar 系仓库才用：实测的 token 取值、`Bt*` 组件对照、`$q.screen` 与 platform 的区别、`cssAddon` 未开的陷阱、`q-gutter` 强制换行、图标前缀、`primary` 被重定向，以及历次返工换来的翻车清单。查 Quasar 官方 API 用 `quasar-skilld`。
-
-- **`design-verify`** — 判定"对不对"，不是"像不像"。两层：静态扫本次改动文件的硬编码字面量（零误报），CDP 扫本次改动元素子树的 computed style（抓「写的是 token 但渲染成别的值」）。都只看本次改动范围，不扫整页——**宁可漏报，不可被第三方噪音淹没**。
-
-- **`design-routing`** — 自动分发器，模型自己会调用。任何涉及视觉的请求都先落到它，由它判档位、选路径、挂底线。它存在的理由是：**大改你会记得走流程，小修你不会**。
-
-## 共享的东西住在哪
-
-各 skill 的 `references/` 下都是**软链**，指向唯一定义源：
-
-| 文件 | 内容 | 谁引用 |
+| 档位 | 何时 | 怎么走 |
 |---|---|---|
-| `constraints.md` | 卡点 / 记账 / 复用优先级 / 失控预算 / 收尾报告 / 依赖降级 | 除 `ask-design` 外全部 |
-| `glossary.md`（软链，真身是仓库根 `CONTEXT.md`） | 链路术语 | 除 `ask-design` 外全部 |
-| `inventory-schema.md` | 盘点文档的格式契约 | `design-probe`（写）、`design-verify`（读） |
-| `svg-export.md` | SVG 导出与暗色变体（只在真要导出时读） | `design-implement` |
+| 新建 | 没有可落地稿 | pipeline 全链路 |
+| 改造 | 既有页重做视觉 | pipeline 从探测进 |
+| 小修 | 改间距/色/字号/图标等，无新稿 | 词汇表 → 工具类落地 → `design-verify` 静态层（见 routing） |
+| 长页面 | 并列 section≥4 或结构重复模块 | pipeline 3.5 清盘 → 5a 骨架 → 5b 逐模块；**禁止**一次 `design-implement` 整页 |
 
-前三行的真身在 `shared/`，`glossary.md` 的真身是仓库根 `CONTEXT.md`。要改就改真身那一份，所有引用它的 skill 同时生效。**不要**在某个 skill 里另写一份——那正是半年后两个 skill 说法不一致的起点。
+## 四条底线（任何路径）
 
-新增共享文件后要回 `install.sh` 里加软链，否则它在安装后的环境里不存在。
+细节与卡点正文在 [`shared/constraints.md`](../shared/constraints.md)，这里只索引：
 
-术语（链路 / 词汇表 / 盘点 / 桥 / 卡点 / 记账 / 降级 / 档位）见仓库根 `CONTEXT.md`，各 skill 里的 `references/glossary.md` 就是它。
+1. **工具类优先**——token/变量写进 `<style>` ≠ 合规；有等价 class 必须挂模板。
+2. **视觉值 ∈ 词汇表**——没有盘点先 `design-probe`；匹配不到 → 卡点 2。
+3. **框架全集要查，不要背举例**——Olares/Quasar：`design-implement-olares`「像开发者一样查」（`core/*.sass` + `dist/api` + `quasar-skilld`）。skill 举例不是目录。
+4. **改完静态验收**——`design-verify` 第一层；豁免必须 `design-exempt:`。
 
-## 四个卡点
+四个**卡点**（停下来问人）：定稿确认 · 词汇表匹配不到 · 要动业务逻辑 · 长页面模块清盘。验收失败不是卡点（自迭代，最多 3 轮）。
 
-除这四处一律自主推进，不为了"确认一下"打断你：
+## 共享定义源
 
-1. **设计定稿确认**——不确认就写代码，等于把一个错的设计完美实现一遍。通过之后**必须重新拉一次 Figma 当前状态**，因为设计师可能已经直接改了图层。
-2. **词汇表匹配不到**——包括"这个项目压根没有 token 体系"。
-3. **要动业务逻辑**。
-4. **模块清盘确认**——只在长页面档（并列 section ≥ 4，或有结构重复的模块）出现：写代码前先把模块清单、结构复用判断和**物料清单**给你看一眼。能自己处理的（导图、映射图标、补非理想态结构）已经做完了，不会拿来问你；你只面对两类事——**要你提供的物料**（终稿文案、真实图片、接口字段、移动稿）和**要你拍板的决定**（每条都带好了建议，通常回一句确认即可）。
+| 文件 | 内容 |
+|---|---|
+| `shared/constraints.md` | 卡点 / 复用 / 工具类优先 / 失控预算 / 收尾（**框架无关**） |
+| `CONTEXT.md`（各 skill 里叫 `glossary.md`） | 链路术语 |
+| `shared/inventory-schema.md` | 盘点格式（probe 写、verify 读） |
+| `shared/svg-export.md` | SVG / 暗色变体 |
+| `docs/inbox.md` | 经验暂存；**默认不直接改 SKILL 正文** |
 
-**验收失败不是卡点**，agent 自己迭代；但超过 3 轮就停下汇报，不无限磨。
+各 skill `references/` 是软链。改真身，勿复制一份。
 
-## 和官方 Figma skill 的分工
+## 和外部 skill 的边界
 
-官方插件带了约 2600 行，把「代码 → Figma」写得很细（`figma-generate-design` / `figma-use`）。我们**不重写**那部分，只在正确时机按名字委派。
+- **Figma 官方**：代码→Figma 很厚；我们补探测 / 验收 / i18n / 非理想态 / 收尾，按名委派不重写。
+- **`polish` / `colorize` / `typeset` / …**：有判断力、不懂你的 token → routing 加护栏（先词汇表，后 verify）。
+- **`quasar-skilld`**：官方全文；版本可能新于项目 → props 以 `dist/api` 为准。
 
-补的是官方薄的那一侧——`figma-design-to-code` 只有 61 行，"复用项目已有组件和 token"只有一句话。词汇表探测、验收闭环、i18n / 非理想态 / a11y 保护、收尾报告，都在这边。
+## 经验回流
 
-## 通用设计 skill 怎么配合
-
-`polish` / `layout` / `colorize` / `animate` / `typeset` / `critique` 那一批视觉判断力很强，但**不知道你有 token 体系**。
-
-`design-routing` 会给它们加护栏：用之前先把词汇表交给它，用之后跑一次静态校验。不必因此放弃它们。
-
-## 经验怎么回流
-
-收尾报告里会附「建议写回 skill 的条目」，落点是本仓库（`olares-design-skills`）的 [`docs/inbox.md`](../docs/inbox.md)（暂存区），**不是直接改 SKILL.md**。
-
-**agent 默认不改 skill 正文**——一次性偶发问题先攒 inbox；人确认沉淀后再改正文。当场改正文的结果总是“在最相关那节末尾加一段”，十次之后文件肿成三百行。采不采纳你说了算。
+收尾里的「建议写回 skill」→ [`docs/inbox.md`](../docs/inbox.md)。人确认后再改正文，避免每次在节尾堆一段把文件撑爆。
