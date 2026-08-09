@@ -16,6 +16,20 @@ description: >-
 
 **先读 [references/constraints.md](references/constraints.md)** 的**第四节**（复用优先级）、**第五节**（工具类优先与豁免格式）与**第六节**（UI 可以分文件，逻辑必须共用——本仓库响应式分文件时直接适用）。
 
+### 文案叠加（新增文案时）
+
+完整落地 **或** 小修，只要本次要写**新的**用户可见文案就走本节；纯样式/结构、或只复用已有 key → 跳过。**只改增量，不改存量。**
+
+1. **缺则全局装**：本机没有 `olares-ux-writing` / `olares-i18n-audit`（查 `~/.agents/skills/` 或 `~/.claude/skills/`）时先装再继续：
+   ```bash
+   npx skills add fnalways/olares-writing-skills -g -y --full-depth \
+     -a cursor -a claude-code -a universal
+   ```
+2. **写新文案前** Read `olares-ux-writing`：新 key / 新中英（或项目要求的 locale）尽量贴业务场景与术语；Figma 字只当参考。
+3. **存量不动**：能复用的 key 原样复用；**禁止**改已有翻译、顺手「统一语气」或「对齐 Figma」。改旧文案由用户直接调 writing skill。
+4. **模糊就停**：近义 key 复用还是新建、Figma 与存量略有出入、给旧 key 补 locale、抽 key 要不要改措辞、重命名/合并 key——任一拿不准 → **先问人**（附已有摘录 + 建议），默认不动存量；禁止猜完就改 i18n。
+5. **收尾**：`design-verify` 在 Olares 路径会委派 `olares-i18n-audit`，只审本次新增（硬编码 → 失败；风格 → 记账）。
+
 **[references/quasar.md](references/quasar.md) 是落地索引与坑，不是 Quasar 全文。** 按需跳节；布局/样式**全集**在 `node_modules/quasar` + `quasar-skilld`（见「像开发者一样查」）。下表是入口：
 
 | 要解决什么 | 读哪节 |

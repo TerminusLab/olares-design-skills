@@ -10,6 +10,20 @@
 
 幂等，重复跑安全。脚本会建软链，并做两层自检：共享文件是否可达，以及**内容是否一致**（frontmatter 名与目录名、引用列表完整性、阶段编号、引用路径写法、归档防误加载）。后者是因为软链可达不等于说法一致——文档与实际不符不会报错，只会在半年后让人踩坑。
 
+**外部依赖（文案叠加）**：Olares 路径（完整落地或小修）且要**新增** UI 文案时，需要全局已装：
+
+- `olares-ux-writing`
+- `olares-i18n-audit`
+
+（来自 [`fnalways/olares-writing-skills`](https://github.com/fnalways/olares-writing-skills)。）`./install.sh` 若发现缺失会执行：
+
+```bash
+npx skills add fnalways/olares-writing-skills -g -y --full-depth \
+  -a cursor -a claude-code -a universal
+```
+
+只**新增**文案时由 design 链路间接调用；**不改存量**。模糊（近义 key、与存量略有出入、补 locale 等）须先问人。改存量多语言请直接调上述 skill，不要经本仓库代劳。
+
 ## skill 清单
 
 | skill | 什么时候触发 |
@@ -24,7 +38,7 @@
 
 日常**不需要自己挑 skill**——`design-routing` 会分发。小修最容易绕过工具类约束，所以短路径仍强制：词汇表 → class → verify。
 
-Olares/Quasar：布局/样式**全集**在项目 `node_modules/quasar` 与 `quasar-skilld`（`style/` `layout/`），skill 只给坑与查证流程。
+Olares/Quasar：布局/样式**全集**在项目 `node_modules/quasar` 与 `quasar-skilld`（`style/` `layout/`），skill 只给坑与查证流程。**增量**文案走**文案叠加**（完整落地或小修均可）；无新增则不挂 writing skill。
 
 `polish` / `colorize` / `typeset` 等通用设计 skill：先词汇表、后 verify。
 

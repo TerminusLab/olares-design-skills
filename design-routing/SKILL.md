@@ -27,6 +27,8 @@ description: >-
 
 Olares / Quasar：**叠加**读 `design-implement-olares`「小修速查」+「像开发者一样查」——框架全集在 `node_modules/quasar` 与 `quasar-skilld`，不在 skill 举例里。
 
+**文案叠加（Olares，含小修）**：**只改增量，不改存量。** 本次有**增量**用户可见文案时，挂 `olares-ux-writing` + 收尾 `olares-i18n-audit`（缺则全局安装）——闸门是「新增」不是档位。纯样式小修、只复用已有 key → 不挂。**禁止**经本链路改存量多语言。分不清增量/存量 → **停下来问人**（默认不动存量）。改旧文案由用户直接调 writing skill。详见 [references/glossary.md](references/glossary.md)「文案叠加」与 constraints 第三节 i18n。
+
 这三条对**所有**路径生效，包括下面那些通用设计 skill。
 
 ---
@@ -84,6 +86,8 @@ Olares / Quasar：**叠加**读 `design-implement-olares`「小修速查」+「�
    - **Olares / Quasar**：先读 `design-implement-olares` 小修坑表；选型超出坑表 → **同一文件「像开发者一样查」**（`core/*.sass`、`dist/api`、`quasar-skilld` 的 `style/`+`layout/`）。举例不是全集。
 3. **卡点 2** —— 无匹配就问人；必须自定义 → 紧邻上一行 `/* design-exempt: … */`。
 4. **`design-verify` 静态层** —— 只扫本次改动行。
+
+**小修 + 增量文案**：同样挂文案叠加（读 `olares-ux-writing`，收尾委派 `olares-i18n-audit`）。只复用已有 key、或纯样式小修 → 不挂。存量一字不改；模糊（近义 key / 与存量略有出入 / 补 locale 等）→ 先问人。要润色存量 → 请用户直接调 writing skill。
 
 超出任一条 → 完整 `design-implement`（Olares 再叠 `design-implement-olares`）：有 Figma 要对、改结构、导 SVG/暗色、改复用组件、跨三类以上视觉值。
 

@@ -29,9 +29,10 @@ disable-model-invocation: true
 | `design-pipeline` | 新建 / 改造 / 长页面编排与卡点 |
 | `design-probe` | 建词汇表 → `docs/design-system-inventory.md`（快照，会过期） |
 | `design-implement` | Figma → 代码（通用） |
-| `design-implement-olares` | 上者叠加：Olares/Quasar 坑 + **像开发者一样查**框架全集 |
-| `design-verify` | 对不对：静态层 + 可选 CDP；含伪合规 / 可工具类化布局 |
+| `design-implement-olares` | 上者叠加：Olares/Quasar 坑 + **像开发者一样查**框架全集；**增量文案**时挂文案叠加（含小修） |
+| `design-verify` | 对不对：静态层 + 可选 CDP；Olares 有增量文案时再委派 `olares-i18n-audit`（含小修） |
 | `quasar-skilld` | Quasar 官方文档镜像（`style/` `layout/`…）；类名真源仍是项目 `node_modules/quasar` |
+| `olares-ux-writing` / `olares-i18n-audit` | **外部**依赖（不在本仓库）。Olares 有**增量**文案时由本链路间接调用（含小修）；改存量文案请用户直接调 |
 
 ## 三档（+ 长页面叠层）
 
@@ -70,6 +71,11 @@ disable-model-invocation: true
 - **Figma 官方**：代码→Figma 很厚；我们补探测 / 验收 / i18n / 非理想态 / 收尾，按名委派不重写。
 - **`polish` / `colorize` / `typeset` / …**：有判断力、不懂你的 token → routing 加护栏（先词汇表，后 verify）。
 - **`quasar-skilld`**：官方全文；版本可能新于项目 → props 以 `dist/api` 为准。
+- **文案叠加**（`olares-ux-writing` + `olares-i18n-audit`，来自 `fnalways/olares-writing-skills`）：
+  - **何时**：Olares 路径（完整落地或小修）+ 本次**增量**用户可见文案。
+  - **只改增量，不改存量**；模糊（近义 key / 与存量略有出入 / 补 locale 等）→ **先问人**，默认不动存量。
+  - **不做**：无新增的纯样式改动；改项目已有多语言（请直接调这两个 skill，不要走 design 链路间接改）。
+  - **缺装**：`./install.sh` 会检查并全局安装；运行时也可按 `design-implement-olares` 里的命令补装。
 
 ## 经验回流
 

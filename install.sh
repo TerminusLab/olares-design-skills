@@ -46,6 +46,51 @@ done
 
 fail=0
 
+# ---- 外部依赖：文案叠加（olares-ux-writing / olares-i18n-audit）----
+# Olares 完整落地新增文案时需要；缺则全局安装。不装进本仓库，避免复制文案规范。
+
+echo
+echo "外部依赖：文案叠加 skill"
+
+WRITING_SKILLS=(olares-ux-writing olares-i18n-audit)
+writing_missing=()
+
+writing_skill_present() {
+  local name="$1"
+  [ -e "$HOME/.agents/skills/$name/SKILL.md" ] \
+    || [ -e "$HOME/.claude/skills/$name/SKILL.md" ] \
+    || [ -L "$HOME/.claude/skills/$name" ] \
+    || [ -L "$HOME/.agents/skills/$name" ]
+}
+
+for ws in "${WRITING_SKILLS[@]}"; do
+  if writing_skill_present "$ws"; then
+    echo "  ok   ${ws} (global)"
+  else
+    echo "  miss ${ws}"
+    writing_missing+=("$ws")
+  fi
+done
+
+if [ "${#writing_missing[@]}" -gt 0 ]; then
+  echo "  -> installing fnalways/olares-writing-skills globally (--full-depth)..."
+  if npx --yes skills add fnalways/olares-writing-skills -g -y --full-depth \
+      -a cursor -a claude-code -a universal; then
+    for ws in "${WRITING_SKILLS[@]}"; do
+      if writing_skill_present "$ws"; then
+        echo "  ok   ${ws} (installed)"
+      else
+        echo "  FAIL ${ws} still missing after install (~/.agents/skills or ~/.claude/skills)" >&2
+        fail=1
+      fi
+    done
+  else
+    echo "  FAIL npx skills add failed; run manually:" >&2
+    echo "       npx skills add fnalways/olares-writing-skills -g -y --full-depth -a cursor -a claude-code -a universal" >&2
+    fail=1
+  fi
+fi
+
 # ---- 自检一：软链可达 ----
 
 echo
@@ -147,6 +192,19 @@ for kw in "自己解决" "物料清单" "带建议再问\|带上自己的建议"
 done
 if ! grep -q "物料就绪门槛" "$REPO/design-pipeline/SKILL.md"; then
   echo "  FAIL design-pipeline 缺物料就绪门槛，5a 会拿占位数据定 props 接口" >&2
+  fail=1
+fi
+
+# 2.4f 文案叠加：入口 skill 必须知道闸门（只增量 / 不改存量；模糊须确认；小修也可挂）
+#      只写在 constraints 而 routing/implement/verify 不提 = 永远走不到。
+for s in design-routing design-implement-olares design-verify design-pipeline ask-design; do
+  if ! grep -q "文案叠加" "$REPO/$s/SKILL.md"; then
+    echo "  FAIL $s/SKILL.md 没提文案叠加，Olares 新增文案闸门会断" >&2
+    fail=1
+  fi
+done
+if ! grep -q "文案叠加" "$REPO/CONTEXT.md"; then
+  echo "  FAIL CONTEXT.md 缺「文案叠加」术语" >&2
   fail=1
 fi
 
