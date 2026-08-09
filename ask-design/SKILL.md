@@ -18,6 +18,8 @@ disable-model-invocation: true
 
 由 **`design-pipeline`** 编排。它自己不写 Figma API 细节，在每个阶段委派出去。
 
+**Figma 链接 ≠ 有稿。** 画布空、或诉求是「先设计再开发」时仍走 pipeline 生成图层，不要当成「有稿直接 implement」。
+
 终点是「页面能跑 + 验收通过 + 收尾报告」，**不 commit、不开 PR**——那些交给 `code-review`、`split-to-prs`。
 
 ## 三档进入方式
@@ -87,6 +89,6 @@ disable-model-invocation: true
 
 ## 经验怎么回流
 
-收尾报告里会附「建议写回 skill 的条目」，落点是 `docs/inbox.md`（暂存区），**不是直接改 SKILL.md**。
+收尾报告里会附「建议写回 skill 的条目」，落点是本仓库（`olares-design-skills`）的 [`docs/inbox.md`](../docs/inbox.md)（暂存区），**不是直接改 SKILL.md**。
 
-**agent 不会自己改 skill 文件**——它会把一次性的偶发问题写成永久约束，半年后没人读得完。当场改正文的结果总是“在最相关那节末尾加一段”，十次之后文件肿成三百行。先攒着，回看时才能看出哪些是同一类问题。采不采纳你说了算。
+**agent 默认不改 skill 正文**——一次性偶发问题先攒 inbox；人确认沉淀后再改正文。当场改正文的结果总是“在最相关那节末尾加一段”，十次之后文件肿成三百行。采不采纳你说了算。

@@ -63,3 +63,14 @@
 ## 待沉淀
 
 （空）
+
+---
+
+## 已沉淀（备查，可删）
+
+### 2026-08-07 · 五条收进正文
+
+- 卡点 2 菜单 → `shared/constraints.md` + `design-probe`
+- Greenfield / 阶段 3 自检 / 演示边界 → `design-pipeline` + `CONTEXT.md`
+- 空画布路由 → `design-routing` + `ask-design`
+- 动效规格 → `shared/constraints.md` 第三节；verify 轻检 → `design-verify`

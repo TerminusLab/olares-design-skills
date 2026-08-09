@@ -34,7 +34,8 @@ description: >-
 | 用户大概会这么说 | 路由到 | 档位 |
 |---|---|---|
 | "做一个 XX 页面 / 功能"（还没有设计稿） | `design-pipeline` | 新建，全链路 |
-| 给了 figma 链接 + "实现 / 还原 / 按这个改" | `design-implement`（Olares/Quasar 项目叠加 `design-implement-olares`） | — |
+| 给了 figma 链接 + "实现 / 还原 / 按这个改"（**画布上已有可落地 frame**） | `design-implement`（Olares/Quasar 项目叠加 `design-implement-olares`） | — |
+| 给了 figma 链接但画布空 / 只要空白 page / 诉求是「设计再开发」 | `design-pipeline`（须生成图层） | 新建 |
 | 给的 figma 是一整页多个并列模块（首页 / 落地页 / 仪表盘 / 设置页 / 详情页 / 长表单皆算） | `design-pipeline`，走阶段 3.5 拆分流程 | **长页面** |
 | "这个页面重做一版视觉 / 按新设计改版" | `design-pipeline`，从阶段 2 进 | 改造 |
 | "改一下间距 / 换个颜色 / 调字号 / 换个图标 / 这个组件样式改改" | `design-implement` 第 1 步 + 第 3 步，再跑 `design-verify` 静态层 | **小修** |
@@ -45,7 +46,11 @@ description: >-
 
 **判不准档位就问一句**"这次是新建、改造，还是小修？"——比走错档位浪费半小时便宜。
 
-### 拿到 figma 链接时多问自己一句：这是一个页面还是一整页？
+### 拿到 figma 链接时先问：有稿还是空画布？
+
+**链接 ≠ 有稿。** 先 `get_metadata`（或等价）看目标 page：若无业务 frame、只有空白画布，或用户要的是生成/设计后再开发 → **走 `design-pipeline`**，不要进 `design-implement`。
+
+### 再问：这是一个页面还是一整页？
 
 并列 section **≥ 4**、或存在结构重复的模块、或估算一次写完接近输出上限时，**不要直接委派 `design-implement` 整页落地**，转 `design-pipeline` 走拆分流程。这三条任一命中即算，且不限页面类型——仪表盘、设置页、详情页、长表单和官网首页一样适用。
 
