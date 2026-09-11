@@ -1,21 +1,30 @@
 # olares-design-skills
 
-设计到开发链路的 skill 集合。装进 `~/.claude/skills` 后 Cursor 与 Claude Code 都能用。
+设计到开发链路的 skill 集合。Cursor 与 Claude Code 都能用。
 
 ## 安装
 
 ```bash
-./install.sh
+npx skills add TerminusLab/olares-design-skills -g -y \
+  -a cursor -a claude-code -a universal
 ```
 
-幂等，重复跑安全。脚本会建软链，并做两层自检：共享文件是否可达，以及**内容是否一致**（frontmatter 名与目录名、引用列表完整性、阶段编号、引用路径写法、归档防误加载）。后者是因为软链可达不等于说法一致——文档与实际不符不会报错，只会在半年后让人踩坑。
+不要加 `--full-depth`：默认就能发现 7 个正式 skill；加了会把 `docs/archive/` 里已废弃的 `DEPRECATED-figma-to-tokens` 也装上。
+
+更新：
+
+```bash
+npx skills update -g
+```
+
+本仓库开发者（要软链回 clone、跑内容自检）才用 `./install.sh`。幂等，重复跑安全。脚本会建软链，并做两层自检：共享文件是否可达，以及**内容是否一致**（frontmatter 名与目录名、引用列表完整性、阶段编号、引用路径写法、归档防误加载）。后者是因为软链可达不等于说法一致——文档与实际不符不会报错，只会在半年后让人踩坑。
 
 **外部依赖（文案叠加）**：Olares 路径（完整落地或小修）且要**新增** UI 文案时，需要全局已装：
 
 - `olares-ux-writing`
 - `olares-i18n-audit`
 
-（来自 [`fnalways/olares-writing-skills`](https://github.com/fnalways/olares-writing-skills)。）`./install.sh` 若发现缺失会执行：
+（来自 [`fnalways/olares-writing-skills`](https://github.com/fnalways/olares-writing-skills)。）缺了由落地路径自行补装；`./install.sh` 若发现缺失也会执行：
 
 ```bash
 npx skills add fnalways/olares-writing-skills -g -y --full-depth \
@@ -60,8 +69,8 @@ shared/constraints.md         卡点 / 记账 / 复用优先级 / 失控预算 /
 shared/inventory-schema.md    盘点文档的格式契约（probe 写、verify 读）
 shared/svg-export.md          SVG 导出与暗色变体（只在真要导出时读）
 docs/adr/                     架构决策记录
-docs/inbox.md                 经验回流暂存区
-docs/archive/                 拆分前的旧版，已废弃、不安装
+docs/inbox.md                 经验回流暂存区（笔记，不是 skill，不要当安装入口）
+docs/archive/                 拆分前的旧版，已废弃、不要装
 <skill>/SKILL.md              各 skill
 <skill>/references/           指向 shared/ 与 CONTEXT.md 的软链
 install.sh
