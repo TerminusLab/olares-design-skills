@@ -62,7 +62,19 @@
 
 ## 待沉淀
 
-（空）
+### 2026-08-18 · TermiPass 是多入口 monorepo，`$primary` 按 app 各自覆盖，BEX 是黄色
+
+- **现象**：给 BEX 翻译页做删除确认弹窗，要给确认按钮配色。`design-implement-olares` 的仓库对照表里 TermiPass 那行 `--q-primary` 只写了「跟所在构建」，照字面读会以为没被覆盖、是 Quasar 默认 `#1976D2` 的蓝。实际翻 `src/css/*/variables.scss` 才发现每个 app 入口各覆盖一份：LarePass / Vault / Files = `$yellow-6`（黄），dashboard = `$light-blue-6`，market / desktop = `$blue-default-light`，controlHub = `$blue-6`，studio = 裸 `#1976d2`。**BEX 的 sidepanel 与 options 页走 LarePass 构建，`primary` 是黄的。**
+- **根因**：对照表把 terminus-cloud / AssistHub 的取值写死了（`orange-default` / `blue-default`），唯独 TermiPass 写成「跟所在构建」这种需要自己再查一步的说法，但没给查哪里。而 TermiPass 恰恰是入口最多的那个仓库——同一套代码在 11 个 `src/css/<app>/variables.scss` 下 `primary` 是 5 种不同颜色，比另外两个仓库更容易撞。
+- **正确做法**：把「查 `src/css/<app>/variables.scss` 定位当前入口的 `$primary`」写成 TermiPass 那一行的动作，并补一句「BEX = LarePass 构建 = `$yellow-6`」。既有的「别默认 `primary` 是设计稿那个蓝、要品牌色就直接写语义色名」这条结论不变，只是补上怎么查。
+- **归到**：`design-implement-olares` 仓库对照表 TermiPass 行（**改那一行，不要新加一节**——`primary` 陷阱在该文件里已有 §B 和小修速查两处说法，再加第三处就是矛盾的起点）。
+
+### 2026-08-18 · `BtDialog` 的 `okStyle` 传 token 名是无效 CSS，静默回退
+
+- **现象**：照存量写法给确认弹窗的确认按钮配色，`okStyle: { background: 'yellow-default' }`（`ItemList.vue` 里就是这么写的），按钮颜色不对但不报错。
+- **根因**：`okStyle` 在 `dialog/src/DialogFooter.vue` 里是直接绑到 `:style` 上的，`background: 'yellow-default'` 不是合法 CSS 值，浏览器丢弃该声明，于是回退到 `.but-creat` 的默认 `$yellow-6`。**恰好也是黄色，所以看起来"生效了"**——换成 `red-default` 才会暴露。写对的那种（`MarketSourceItem.vue`）用的是 `useColor('blue-default').color`，拿到的是 `getPaletteColor` 解析出的真 hex，且 `useColor` 内部有 `watchEffect` 跟随暗色。
+- **正确做法**：`okStyle` 必须传真实颜色值，走 `useColor('<token>').color`；不要传 token 名，也不要写 hex。
+- **归到**：`design-implement-olares`「常用组件先搜这些」那节——该节现在只说了「别停在 Quasar 原生够用，项目里有 `BtDialog`」，但没说 `BtDialog` 自己有个会静默失败的 API。属于「找到了正确组件之后仍然会踩的坑」。
 
 ---
 
@@ -102,3 +114,17 @@
 - **根因**：举一反三时把框架细节写进 `shared/constraints`；ask-design 从地图变成第二份操作手册。
 - **正确做法**：constraints §5 只保留框架无关原则；Quasar 查证只在 `design-implement-olares`；ask-design 改回索引型地图；routing 底线指向 verify 新扫描项。
 - **该归到哪**：本次已改正文（ask-design / constraints / routing / verify·olares description / README）。
+
+### 2026-09-07 · 落地前没读仓库已有盘点，自己重推词汇表 → 漏掉只有盘点才知道的陷阱
+
+- **现象**：TermiPass BEX 设计落地（7 个 commit / 49 文件）时 agent 自己从 `quasar.variables.sass` / `variables-bg.sass` / `theme.scss` 重新推了间距、排版、颜色，**没打开仓库里已经存在的 `docs/design-system-inventory.md`**。结果漏掉盘点里明写的一条：「`blue-6` 亮暗同值 #3377FF，暗色模式不跟随；新代码一律用 `blue-default`」。整体重写的 `TranslateIndex.vue` 里因此留下 4 处 `text-blue-6`，旁边还有 2 处 `text-grey-4`（Quasar primitive #e0e0e0，无亮暗配对 —— 暗色下 disabled 项比 enabled 项更亮，层级反转）。
+- **根因**：① `design-implement-olares` 的「像开发者一样查」把权威源指向 `node_modules/quasar/src/css/core/*` 与项目 theme 文件，**没有把「先查仓库已有盘点」写成第 0 层**；② 「某个 class 看起来能用、实际不跟随主题」这类陷阱**只存在于盘点的 ⚠️ 段落里**，从源文件按规律推导推不出来 —— 源文件只告诉你 `$grey-4` 存在，不告诉你它不该用。
+- **正确做法**：落地前第一步读 `docs/design-system-inventory.md`（并核对元信息里的 `盘点范围` 与源文件是否已变）；源文件只在盘点缺项、或盘点已过期时才去推。
+- **该归到哪**：`design-implement-olares` 查证顺序补「第 0 层：仓库已有盘点」；`design-routing` 小修路径里的「词汇表」明确指盘点文件而不是源文件。
+
+### 2026-09-07 · 整体重写存量文件时，文件里原有的写法就成了新代码
+
+- **现象**：`TranslateIndex.vue` 被整体重写（`Write` 覆盖），文件里存量的 `text-blue-6`、`text-grey-4`、以及与模板上 `text-subtitle3` / `text-overline` **完全重复**的 scoped `font-size` / `line-height` 被原样搬了过去。当时的自我判断是「这些是存量写法，不在本次改动范围」。
+- **根因**：「只改增量、不动存量」这条**本是文案规则**（避免越权改既有翻译），被误用到样式上。而 `design-verify` 只扫 diff 的新增行 —— 整体重写恰恰会把存量行也变成新增行，本该扫得更严，实际却因为「这是存量写法」被自我豁免掉了。
+- **正确做法**：判据是「这一行在本次 diff 里是不是新增的」，不是「这段代码以前有没有」。整体重写一个文件 = 整个文件按新代码验收。文案的「不动存量」与样式的「不动存量」是两件事，不能互相借用。
+- **该归到哪**：`design-verify` 静态层补一句说明；`shared/constraints.md` 第五节豁免部分点明「存量写法不构成豁免理由」。
